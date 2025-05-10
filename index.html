@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <title>Staff Portal</title>
+    <title>Staff Portal with Microsoft Graph Integration</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet" />
+    <!-- Load MSAL.js -->
+    <script src="https://alcdn.msauth.net/browser/2.33.0/js/msal-browser.min.js"></script>
     <style>
-      /* Ensure max height 600px and max width 350px, centered and scroll-free */
       body, html {
         height: 100%;
         margin: 0;
@@ -16,6 +17,7 @@
         justify-content: center;
         align-items: center;
         overflow: hidden;
+        font-size: 18px; /* increased base font size */
       }
       #app {
         background: white;
@@ -37,210 +39,3 @@
     </style>
 </head>
 <body>
-  <div id="app" class="flex flex-col">
-    <!-- Content dynamically injected by JS -->
-  </div>
-  <script>
-    const app = document.getElementById('app');
-
-    // Tailwind colors for button dynamic reuse
-    const buttonBaseClasses = 'w-full font-semibold py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2';
-
-    // Views
-    function renderLoginView() {
-      app.innerHTML = `
-        <h1 class="text-2xl font-semibold mb-6 text-center text-gray-800">Staff Login</h1>
-        <form id="login-form" class="space-y-4">
-          <div>
-            <label for="login-name" class="block text-gray-700 font-semibold mb-1">Name</label>
-            <input type="text" id="login-name" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your name" required autocomplete="off"/>
-          </div>
-          <div>
-            <label for="login-staff-id" class="block text-gray-700 font-semibold mb-1">Staff ID</label>
-            <input type="text" id="login-staff-id" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your staff ID" required autocomplete="off"/>
-          </div>
-          <button type="submit" class="${buttonBaseClasses} bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200">Login</button>
-        </form>
-      `;
-
-      const form = document.getElementById('login-form');
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = document.getElementById('login-name').value.trim();
-        const staffId = document.getElementById('login-staff-id').value.trim();
-        if (name && staffId) {
-          localStorage.setItem('staffName', name);
-          localStorage.setItem('staffId', staffId);
-          renderMainFormView();
-        } else {
-          alert('Please enter both your name and staff ID.');
-        }
-      });
-    }
-
-    function renderMainFormView() {
-      const staffName = localStorage.getItem('staffName');
-      const staffId = localStorage.getItem('staffId');
-      if (!staffName || !staffId) {
-        alert('Please log in first.');
-        renderLoginView();
-        return;
-      }
-      app.innerHTML = `
-        <h1 id="welcome" class="text-2xl font-semibold mb-6 text-center text-gray-800">Welcome, ${staffName}!</h1>
-        <form id="main-form" class="space-y-4" novalidate>
-          <div>
-            <label for="name" class="block text-gray-700 font-semibold mb-1">Name</label>
-            <input type="text" id="name" class="w-full p-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="${staffName}" disabled />
-          </div>
-          <div>
-            <label for="staff-id" class="block text-gray-700 font-semibold mb-1">Staff ID</label>
-            <input type="text" id="staff-id" class="w-full p-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="${staffId}" disabled />
-          </div>
-          <div>
-            <label for="sign-type" class="block text-gray-700 font-semibold mb-1">Sign Type</label>
-            <select id="sign-type" class="w-full p-2 border border-gray-300 rounded-lg" required>
-              <option value="" disabled selected>Select Sign Type</option>
-              <option value="SIGN IN">SIGN IN</option>
-              <option value="SIGN OUT">SIGN OUT</option>
-            </select>
-          </div>
-          <div>
-            <label for="email" class="block text-gray-700 font-semibold mb-1">Email</label>
-            <input type="email" id="email" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="Enter your email" required autocomplete="email"/>
-          </div>
-          <div>
-            <label for="unit" class="block text-gray-700 font-semibold mb-1">Unit</label>
-            <select id="unit" class="w-full p-2 border border-gray-300 rounded-lg" required>
-              <option value="" disabled selected>Select Unit</option>
-              <option value="INBOUND">INBOUND</option>
-              <option value="OUTBOUND">OUTBOUND</option>
-              <option value="SERVICE EXCELLENCE">SERVICE EXCELLENCE</option>
-              <option value="SOCIAL MEDIA">SOCIAL MEDIA</option>
-              <option value="DIGITAL SUPPORT">DIGITAL SUPPORT</option>
-            </select>
-          </div>
-          <div>
-            <label for="shift" class="block text-gray-700 font-semibold mb-1">Shift</label>
-            <select id="shift" class="w-full p-2 border border-gray-300 rounded-lg" required>
-              <option value="" disabled selected>Select Shift</option>
-              <option value="MORNING">MORNING</option>
-              <option value="REGULAR">REGULAR</option>
-              <option value="AFTERNOON">AFTERNOON</option>
-              <option value="NIGHT">NIGHT</option>
-            </select>
-          </div>
-          <button type="submit" class="${buttonBaseClasses} bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200">Submit</button>
-          <button type="button" id="logout-btn" class="${buttonBaseClasses} bg-red-500 text-white hover:bg-red-600 transition-colors duration-200 mt-3">Logout</button>
-        </form>
-        <div id="loading-indicator" class="hidden mt-4 text-center text-blue-600 font-semibold">Submitting...</div>
-      `;
-
-      // Logout button event
-      document.getElementById('logout-btn').addEventListener('click', () => {
-        if (confirm('Are you sure you want to logout?')) {
-          localStorage.clear();
-          renderLoginView();
-        }
-      });
-
-      // Form submission event
-      document.getElementById('main-form').addEventListener('submit', submitForm);
-    }
-
-    function submitForm(event) {
-      event.preventDefault();
-      const loadingIndicator = document.getElementById('loading-indicator');
-      loadingIndicator.classList.remove('hidden');
-
-      // get form values
-      const formData = {
-        name: document.getElementById('name').value,
-        staffId: document.getElementById('staff-id').value,
-        signType: document.getElementById('sign-type').value,
-        email: document.getElementById('email').value.trim(),
-        unit: document.getElementById('unit').value,
-        shift: document.getElementById('shift').value
-      };
-
-      // Basic email validation
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailPattern.test(formData.email)) {
-        alert('Please enter a valid email address.');
-        loadingIndicator.classList.add('hidden');
-        return;
-      }
-
-      // Ensure all required fields selected or filled
-      if (!formData.signType || !formData.unit || !formData.shift) {
-        alert('Please select all required fields.');
-        loadingIndicator.classList.add('hidden');
-        return;
-      }
-
-      if (!navigator.geolocation) {
-        alert('Geolocation is not supported by your browser.');
-        loadingIndicator.classList.add('hidden');
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          formData.latitude = position.coords.latitude;
-          formData.longitude = position.coords.longitude;
-
-          // Replace with your actual Zoho Flow webhook URL
-          const webhookUrl = 'YOUR_ZOHO_FLOW_WEBHOOK_URL';
-
-          fetch(webhookUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-          })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok ' + response.statusText);
-            }
-            return response.json();
-          })
-          .then((result) => {
-            alert('Form submitted successfully!');
-            localStorage.clear();
-            renderLoginView();
-          })
-          .catch((error) => {
-            console.error('Error:', error);
-            alert('Error submitting form. Please try again.');
-          })
-          .finally(() => {
-            loadingIndicator.classList.add('hidden');
-          });
-        },
-        (error) => {
-          alert('Unable to retrieve your location. Please enable location services.');
-          loadingIndicator.classList.add('hidden');
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        }
-      );
-    }
-
-    // On page load, decide which view to show
-    window.addEventListener('DOMContentLoaded', () => {
-      const name = localStorage.getItem('staffName');
-      const staffId = localStorage.getItem('staffId');
-      if (name && staffId) {
-        renderMainFormView();
-      } else {
-        renderLoginView();
-      }
-    });
-  </script>
-</body>
-</html>
-
