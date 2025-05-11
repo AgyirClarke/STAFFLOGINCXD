@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Staff Portal - Guest Login and Form Submission</title>
-  <script src="https://alcdn.msauth.net/browser/2.33.0/js/msal-browser.min.js"></script>
+  <title>Staff Portal - Guest Form Submission</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet" />
   <style>
     body, html {
@@ -41,89 +40,19 @@
   <div id="app"></div>
 
   <script>
-    const msalConfig = {
-      auth: {
-        clientId: '6f1f43fe-69f7-4e83-9621-34216252ab5f', // YOUR CLIENT ID
-        authority: 'https://login.microsoftonline.com/common',
-        redirectUri: 'https://agyirclarke.github.io/STAFFLOGINCXD',
-      },
-      cache: {
-        cacheLocation: 'localStorage',
-        storeAuthStateInCookie: false,
-      }
-    };
-
-    const loginRequest = {
-      scopes: ["User.Read", "Sites.ReadWrite.All", "Files.ReadWrite.All"]
-    };
-
-    const siteId = '0957397d-58d5-4413-9c93-f3ba5fe9b2c5,7848e785-7558-4573-a138-7759f7540b9'; // REPLACE with your siteId
-    const driveId = 'b!fTlXCdVYE0Sck_O6X-myxYXnSHhYdXNFoTh3WfdUC5ErUrR-wGBJR5kZvLXZokOO'; // REPLACE with your driveId
-    const itemId = 'afe2af17-5e01-45a4-93a1-11ac4f6653d7'; // REPLACE with your itemId (Excel file)
-
-    const msalInstance = new msal.PublicClientApplication(msalConfig);
     const app = document.getElementById('app');
 
-    function renderLogin() {
+    function renderForm() {
       app.innerHTML = `
-        <h1 class="text-2xl mb-8 text-center">Microsoft Guest Login</h1>
-        <button id="loginBtn" class="w-full py-3 bg-green-600 text-white font-semibold rounded hover:bg-green-700 transition">Login with Microsoft</button>
-      `;
-      document.getElementById('loginBtn').onclick = async () => {
-        try {
-          const loginResponse = await msalInstance.loginPopup(loginRequest);
-          const accessToken = await acquireToken(loginResponse.account);
-          const userType = await getUserType(accessToken);
-          if (userType !== 'Guest') {
-            alert('Access denied. Only external guest users allowed.');
-            await msalInstance.logoutPopup();
-            renderLogin();
-            return;
-          }
-          localStorage.setItem('staffName', loginResponse.account.name || '');
-          localStorage.setItem('staffEmail', loginResponse.account.username || '');
-          renderForm(true, accessToken);
-        } catch (err) {
-          console.error(err);
-          alert('Login failed: ' + (err.message || err));
-        }
-      };
-    }
-
-    async function acquireToken(account) {
-      try {
-        const response = await msalInstance.acquireTokenSilent({
-          scopes: loginRequest.scopes,
-          account: account
-        });
-        return response.accessToken;
-      } catch (err) {
-        return (await msalInstance.acquireTokenPopup(loginRequest)).accessToken;
-      }
-    }
-
-    async function getUserType(accessToken) {
-      const resp = await fetch('https://graph.microsoft.com/v1.0/me', {
-        headers: { Authorization: 'Bearer ' + accessToken }
-      });
-      if (!resp.ok) throw new Error('Failed to get user info');
-      const profile = await resp.json();
-      return profile.userType;
-    }
-
-    function renderForm(msLoginSuccess, accessToken) {
-      const name = localStorage.getItem('staffName') || '';
-      const email = localStorage.getItem('staffEmail') || '';
-      app.innerHTML = `
-        <h1 class="text-2xl mb-6 text-center">Welcome, ${name}!</h1>
+        <h1 class="text-2xl mb-6 text-center">Staff Sign In/Out Form</h1>
         <form id="staffForm" class="space-y-6">
           <div>
             <label for="name" class="block mb-2 font-semibold">Name</label>
-            <input type="text" id="name" disabled class="w-full p-3 border rounded bg-gray-100" value="${name}" />
+            <input type="text" id="name" required placeholder="Enter your name" class="w-full p-3 border rounded" />
           </div>
           <div>
             <label for="email" class="block mb-2 font-semibold">Email</label>
-            <input type="email" id="email" disabled class="w-full p-3 border rounded bg-gray-100" value="${email}" />
+            <input type="email" id="email" required placeholder="Enter your email" class="w-full p-3 border rounded" />
           </div>
           <div>
             <label for="signType" class="block mb-2 font-semibold">Sign Type</label>
@@ -155,108 +84,75 @@
             </select>
           </div>
           <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition">Submit</button>
-          <button type="button" id="logoutBtn" class="w-full mt-4 py-3 bg-red-600 text-white rounded font-semibold hover:bg-red-700 transition">Logout</button>
         </form>
         <div id="loading" class="hidden mt-4 text-center font-semibold text-blue-600">Submitting...</div>
       `;
-      
-      document.getElementById('logoutBtn').onclick = async () => {
-        localStorage.clear();
-        await msalInstance.logoutPopup();
-        renderLogin();
-      };
-      
+
       document.getElementById('staffForm').onsubmit = async e => {
         e.preventDefault();
-        await submitForm(msLoginSuccess, accessToken);
+        await submitForm();
       };
     }
 
-    async function submitForm(msLoginSuccess, accessToken) {
-      if (!msLoginSuccess) {
-        alert('Microsoft login required to submit.');
-        return;
-      }
+    async function submitForm() {
       const loading = document.getElementById('loading');
       loading.classList.remove('hidden');
 
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
       const signType = document.getElementById('signType').value;
       const unit = document.getElementById('unit').value;
       const shift = document.getElementById('shift').value;
 
-      if(!signType || !unit || !shift) {
+      if (!name || !email || !signType || !unit || !shift) {
         alert('Please fill all required fields.');
         loading.classList.add('hidden');
         return;
       }
 
       try {
+        // Get geolocation
         const position = await new Promise((res, rej) => 
           navigator.geolocation.getCurrentPosition(res, rej, {enableHighAccuracy:true})
         );
 
         const latitude = position.coords.latitude.toString();
         const longitude = position.coords.longitude.toString();
-
-        const name = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
         const timestamp = new Date().toISOString();
 
-        const values = [[name, email, signType, unit, shift, latitude, longitude, timestamp]];
+        // Prepare data for submission (replace this with actual submission logic)
+        // As the original submission was to Microsoft Graph API with tokens,
+        // here we just log the data for demonstration.
 
-        const tableName = 'Table1'; // The Table name in your Excel file
-
-        const endpoint = 
-          `https://graph.microsoft.com/v1.0/sites/${siteId}/drives/${driveId}/items/${itemId}/workbook/tables/${tableName}/rows/add`;
-
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({values})
+        console.log({
+          name,
+          email,
+          signType,
+          unit,
+          shift,
+          latitude,
+          longitude,
+          timestamp
         });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Graph API error: ${errorText}`);
-        }
+        // You should replace the below with your actual data handling logic:
+        // For example: send a POST request to your backend or a serverless function
+        // which can handle the actual submission securely.
 
-        alert('Form submitted successfully!');
-        loading.classList.add('hidden');
+        alert('Form submitted successfully!\nCheck console for submitted data.');
+
       } catch (err) {
-        alert('Failed to submit form: ' + err.message);
+        alert('Failed to get location or submit form: ' + err.message);
+      } finally {
         loading.classList.add('hidden');
       }
     }
 
-    // On page load, check if user is already logged in
-    window.onload = async () => {
-      const accounts = msalInstance.getAllAccounts();
-      if (accounts.length > 0) {
-        try {
-          const response = await msalInstance.acquireTokenSilent({
-            scopes: loginRequest.scopes,
-            account: accounts[0],
-          });
-          const userType = await getUserType(response.accessToken);
-          if (userType !== 'Guest') {
-            alert('Access denied. Only external guest users are allowed.');
-            await msalInstance.logoutPopup();
-            renderLogin();
-          } else {
-            localStorage.setItem('staffName', accounts[0].name || '');
-            localStorage.setItem('staffEmail', accounts[0].username || '');
-            renderForm(true, response.accessToken);
-          }
-        } catch {
-          renderLogin();
-        }
-      } else {
-        renderLogin();
-      }
+    // Render the form on page load
+    window.onload = () => {
+      renderForm();
     };
   </script>
 </body>
 </html>
+
