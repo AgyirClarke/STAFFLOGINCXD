@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Staff Portal - External Microsoft User Login Only</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet" />
+  <title>Staff Portal - Guest Login and Form Submission</title>
   <script src="https://alcdn.msauth.net/browser/2.33.0/js/msal-browser.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet" />
   <style>
     body, html {
       height: 100%;
@@ -17,57 +17,38 @@
       align-items: center;
       overflow-y: auto;
       font-size: 18px;
+      padding: 1rem;
     }
     #app {
       background: white;
       border-radius: 0.5rem;
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      width: 90vw;
-      max-width: 420px;
-      min-height: 80vh;
-      max-height: 95vh;
-      padding: 1.5rem;
+      width: 100%;
+      max-width: 480px;
+      min-height: 600px;
+      padding: 2rem;
       box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
     h1 {
       font-weight: 700;
     }
-    /* Scrollbar styling for desktop */
-    #app::-webkit-scrollbar {
-      width: 8px;
-    }
-    #app::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 4px;
-    }
-    #app::-webkit-scrollbar-thumb {
-      background: #888;
-      border-radius: 4px;
-    }
-    #app::-webkit-scrollbar-thumb:hover {
-      background: #555;
-    }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
-  <div id="app" class="flex flex-col"></div>
+  <div id="app"></div>
+
   <script>
-    // MSAL config for multi-tenant including external users
-    // authority 'common' permits all account types, 
-    // but we will check if user is external by inspecting claims
     const msalConfig = {
       auth: {
-        clientId: '6f1f43fe-69f7-4e83-9621-34216252ab5f',
+        clientId: '6f1f43fe-69f7-4e83-9621-34216252ab5f', // YOUR CLIENT ID
         authority: 'https://login.microsoftonline.com/common',
-        redirectUri: 'https://agyirclarke.github.io/STAFFLOGINCXD'
+        redirectUri: 'https://agyirclarke.github.io/STAFFLOGINCXD',
       },
       cache: {
-        cacheLocation: "localStorage",
+        cacheLocation: 'localStorage',
         storeAuthStateInCookie: false,
       }
     };
@@ -76,104 +57,85 @@
       scopes: ["User.Read", "Sites.ReadWrite.All", "Files.ReadWrite.All"]
     };
 
+    const siteId = '0957397d-58d5-4413-9c93-f3ba5fe9b2c5,7848e785-7558-4573-a138-7759f7540b9'; // REPLACE with your siteId
+    const driveId = 'b!fTlXCdVYE0Sck_O6X-myxYXnSHhYdXNFoTh3WfdUC5ErUrR-wGBJR5kZvLXZokOO'; // REPLACE with your driveId
+    const itemId = 'afe2af17-5e01-45a4-93a1-11ac4f6653d7'; // REPLACE with your itemId (Excel file)
+
     const msalInstance = new msal.PublicClientApplication(msalConfig);
     const app = document.getElementById('app');
-    const buttonBaseClasses = 'w-full font-semibold py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2';
 
-    // Placeholder ids — replace with your actual SharePoint IDs
-    const siteId = '0957397d-58d5-4413-9c93-f3ba5fe9b2c5,7848e785-7558-4573-a138-7759f7540b9';
-    const driveId = 'b!fTlXCdVYE0Sck_O6X-myxYXnSHhYdXNFoTh3WfdUC5ErUrR-wGBJR5kZvLXZokOO';
-    const itemId = 'afe2af17-5e01-45a4-93a1-11ac4f6653d7';
-
-    // Util function: Determine if authenticated user is an external guest user in the tenant
-    function isExternalUser(account) {
-      // MSAL account idTokens contain 'tid' for tenant, and sometimes 'idp' or 'iss' claims to check issuer domain
-      // We consider guest users when 'idp' claim is not equal to your tenant
-      // However, MSAL JS doesn't expose full idToken claims easily, so fetch user info from /me endpoint to check userType
-
-      // userType determination will be done in fetchUserType() after acquiring token
-      return false; // placeholder for initial
-    }
-
-    // Fetch user profile including userType via Microsoft Graph
-    async function fetchUserType(accessToken) {
-      // Call Microsoft Graph to get user profile and check 'userType' attribute, expected to be 'Guest' for external users
-      const response = await fetch('https://graph.microsoft.com/v1.0/me', {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
-      if (!response.ok) throw new Error('Failed to fetch user profile.');
-      const profile = await response.json();
-      return profile.userType; // 'Guest' or 'Member'
-    }
-
-    function renderLoginView() {
+    function renderLogin() {
       app.innerHTML = `
-        <h1 class="text-3xl font-semibold mb-6 text-center text-gray-800">Staff Portal - Microsoft Login Only</h1>
-        <button id="ms-login" class="${buttonBaseClasses} bg-green-600 text-white hover:bg-green-700 transition-colors duration-200">Login with Microsoft Account</button>
+        <h1 class="text-2xl mb-8 text-center">Microsoft Guest Login</h1>
+        <button id="loginBtn" class="w-full py-3 bg-green-600 text-white font-semibold rounded hover:bg-green-700 transition">Login with Microsoft</button>
       `;
-      document.getElementById('ms-login').addEventListener('click', () => {
-        msalInstance.loginPopup(loginRequest).then(async (loginResponse) => {
-          try {
-            const accessTokenResponse = await msalInstance.acquireTokenSilent({
-              scopes: loginRequest.scopes,
-              account: loginResponse.account
-            });
-            const userType = await fetchUserType(accessTokenResponse.accessToken);
-            if (userType !== 'Guest') {
-              alert('Access denied. Only external guest users are allowed to login.');
-              msalInstance.logoutPopup(); // logout immediately
-              renderLoginView();
-              return;
-            }
-            // Save user info locally for form prefilling
-            localStorage.setItem('staffName', loginResponse.account.name || '');
-            localStorage.setItem('staffEmail', loginResponse.account.username || '');
-            // Proceed to main form
-            renderMainFormView(true, accessTokenResponse.accessToken);
-          } catch (error) {
-            console.error(error);
-            alert('Failed to acquire access token or fetch user details.');
-            renderLoginView();
+      document.getElementById('loginBtn').onclick = async () => {
+        try {
+          const loginResponse = await msalInstance.loginPopup(loginRequest);
+          const accessToken = await acquireToken(loginResponse.account);
+          const userType = await getUserType(accessToken);
+          if (userType !== 'Guest') {
+            alert('Access denied. Only external guest users allowed.');
+            await msalInstance.logoutPopup();
+            renderLogin();
+            return;
           }
-        }).catch((err) => {
+          localStorage.setItem('staffName', loginResponse.account.name || '');
+          localStorage.setItem('staffEmail', loginResponse.account.username || '');
+          renderForm(true, accessToken);
+        } catch (err) {
           console.error(err);
-          alert('Login failed. Please try again.');
-        });
-      });
+          alert('Login failed: ' + (err.message || err));
+        }
+      };
     }
 
-    // Render main form for logged-in guest users; accessToken required for API calls
-    function renderMainFormView(msLoginSuccess, accessToken) {
-      const staffName = localStorage.getItem('staffName') || '';
-      const staffEmail = localStorage.getItem('staffEmail') || '';
-      if (!staffName || !staffEmail) {
-        alert('User info missing. Please login again.');
-        msalInstance.logoutPopup();
-        renderLoginView();
-        return;
+    async function acquireToken(account) {
+      try {
+        const response = await msalInstance.acquireTokenSilent({
+          scopes: loginRequest.scopes,
+          account: account
+        });
+        return response.accessToken;
+      } catch (err) {
+        return (await msalInstance.acquireTokenPopup(loginRequest)).accessToken;
       }
+    }
+
+    async function getUserType(accessToken) {
+      const resp = await fetch('https://graph.microsoft.com/v1.0/me', {
+        headers: { Authorization: 'Bearer ' + accessToken }
+      });
+      if (!resp.ok) throw new Error('Failed to get user info');
+      const profile = await resp.json();
+      return profile.userType;
+    }
+
+    function renderForm(msLoginSuccess, accessToken) {
+      const name = localStorage.getItem('staffName') || '';
+      const email = localStorage.getItem('staffEmail') || '';
       app.innerHTML = `
-        <h1 id="welcome" class="text-3xl font-semibold mb-6 text-center text-gray-800">Welcome, ${staffName}!</h1>
-        <form id="main-form" class="space-y-5" novalidate aria-label="Staff main form">
+        <h1 class="text-2xl mb-6 text-center">Welcome, ${name}!</h1>
+        <form id="staffForm" class="space-y-6">
           <div>
-            <label for="name" class="block text-gray-700 font-semibold mb-2">Name</label>
-            <input type="text" id="name" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="${staffName}" disabled />
+            <label for="name" class="block mb-2 font-semibold">Name</label>
+            <input type="text" id="name" disabled class="w-full p-3 border rounded bg-gray-100" value="${name}" />
           </div>
           <div>
-            <label for="email" class="block text-gray-700 font-semibold mb-2">Email (Microsoft Account)</label>
-            <input type="email" id="email" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="${staffEmail}" disabled />
+            <label for="email" class="block mb-2 font-semibold">Email</label>
+            <input type="email" id="email" disabled class="w-full p-3 border rounded bg-gray-100" value="${email}" />
           </div>
           <div>
-            <label for="sign-type" class="block text-gray-700 font-semibold mb-2">Sign Type</label>
-            <select id="sign-type" class="w-full p-3 border border-gray-300 rounded-lg" required aria-required="true" aria-label="Select Sign Type">
+            <label for="signType" class="block mb-2 font-semibold">Sign Type</label>
+            <select id="signType" required class="w-full p-3 border rounded">
               <option value="" disabled selected>Select Sign Type</option>
               <option value="SIGN IN">SIGN IN</option>
               <option value="SIGN OUT">SIGN OUT</option>
             </select>
           </div>
           <div>
-            <label for="unit" class="block text-gray-700 font-semibold mb-2">Unit</label>
-            <select id="unit" class="w-full p-3 border border-gray-300 rounded-lg" required aria-required="true" aria-label="Select Unit">
+            <label for="unit" class="block mb-2 font-semibold">Unit</label>
+            <select id="unit" required class="w-full p-3 border rounded">
               <option value="" disabled selected>Select Unit</option>
               <option value="INBOUND">INBOUND</option>
               <option value="OUTBOUND">OUTBOUND</option>
@@ -183,8 +145,8 @@
             </select>
           </div>
           <div>
-            <label for="shift" class="block text-gray-700 font-semibold mb-2">Shift</label>
-            <select id="shift" class="w-full p-3 border border-gray-300 rounded-lg" required aria-required="true" aria-label="Select Shift">
+            <label for="shift" class="block mb-2 font-semibold">Shift</label>
+            <select id="shift" required class="w-full p-3 border rounded">
               <option value="" disabled selected>Select Shift</option>
               <option value="MORNING">MORNING</option>
               <option value="REGULAR">REGULAR</option>
@@ -192,140 +154,109 @@
               <option value="NIGHT">NIGHT</option>
             </select>
           </div>
-          <button type="submit" class="${buttonBaseClasses} bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">Submit</button>
-          <button type="button" id="logout-btn" class="${buttonBaseClasses} bg-red-600 text-white hover:bg-red-700 transition-colors duration-200 mt-4">Logout</button>
+          <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition">Submit</button>
+          <button type="button" id="logoutBtn" class="w-full mt-4 py-3 bg-red-600 text-white rounded font-semibold hover:bg-red-700 transition">Logout</button>
         </form>
-        <div id="loading-indicator" class="hidden mt-4 text-center text-blue-600 font-semibold" role="alert" aria-live="polite">Submitting...</div>
+        <div id="loading" class="hidden mt-4 text-center font-semibold text-blue-600">Submitting...</div>
       `;
-      document.getElementById('logout-btn').addEventListener('click', () => {
-        if (confirm('Are you sure you want to logout?')) {
-          localStorage.clear();
-          msalInstance.logoutPopup();
-          renderLoginView();
-        }
-      });
-      document.getElementById('main-form').addEventListener('submit', (e) => submitForm(e, msLoginSuccess, accessToken));
-    }
-
-    async function submitForm(event, msLoginSuccess, accessToken) {
-      event.preventDefault();
-      const loadingIndicator = document.getElementById('loading-indicator');
-      loadingIndicator.classList.remove('hidden');
-
-      const formData = {
-        name: document.getElementById('name').value,
-        email: document.getElementById('email').value,
-        signType: document.getElementById('sign-type').value,
-        unit: document.getElementById('unit').value,
-        shift: document.getElementById('shift').value
+      
+      document.getElementById('logoutBtn').onclick = async () => {
+        localStorage.clear();
+        await msalInstance.logoutPopup();
+        renderLogin();
       };
-
-      if (!formData.signType || !formData.unit || !formData.shift) {
-        alert('Please complete all required fields.');
-        loadingIndicator.classList.add('hidden');
-        return;
-      }
-
-      if (!navigator.geolocation) {
-        alert('Geolocation is not supported by your browser.');
-        loadingIndicator.classList.add('hidden');
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        formData.latitude = position.coords.latitude.toString();
-        formData.longitude = position.coords.longitude.toString();
-
-        if (!msLoginSuccess || !accessToken) {
-          alert("Authentication error: Please log in again.");
-          loadingIndicator.classList.add('hidden');
-          msalInstance.logoutPopup();
-          renderLoginView();
-          return;
-        }
-
-        try {
-          // Prepare the new row for Excel Table1:
-          const newRow = [
-            formData.name,
-            formData.email,
-            formData.signType,
-            formData.unit,
-            formData.shift,
-            formData.latitude,
-            formData.longitude,
-            new Date().toISOString()
-          ];
-
-          // Endpoints
-          const tableName = 'Table1'; // adjust if needed
-          const endpoint = `https://graph.microsoft.com/v1.0/sites/${siteId}/drives/${driveId}/items/${itemId}/workbook/tables/${tableName}/rows/add`;
-
-          const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ values: [newRow] })
-          });
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Graph API error: ${response.status} - ${errorText}`);
-          }
-
-          alert('Form submitted and Excel updated successfully!');
-          localStorage.clear();
-          msalInstance.logoutPopup();
-          renderLoginView();
-
-        } catch (error) {
-          console.error(error);
-          alert(`Error submitting form: ${error.message}`);
-        }
-
-        loadingIndicator.classList.add('hidden');
-      }, (error) => {
-        alert('Unable to retrieve location. Please enable location services.');
-        loadingIndicator.classList.add('hidden');
-      }, {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      });
+      
+      document.getElementById('staffForm').onsubmit = async e => {
+        e.preventDefault();
+        await submitForm(msLoginSuccess, accessToken);
+      };
     }
 
-    // On load
-    window.addEventListener('DOMContentLoaded', () => {
+    async function submitForm(msLoginSuccess, accessToken) {
+      if (!msLoginSuccess) {
+        alert('Microsoft login required to submit.');
+        return;
+      }
+      const loading = document.getElementById('loading');
+      loading.classList.remove('hidden');
+
+      const signType = document.getElementById('signType').value;
+      const unit = document.getElementById('unit').value;
+      const shift = document.getElementById('shift').value;
+
+      if(!signType || !unit || !shift) {
+        alert('Please fill all required fields.');
+        loading.classList.add('hidden');
+        return;
+      }
+
+      try {
+        const position = await new Promise((res, rej) => 
+          navigator.geolocation.getCurrentPosition(res, rej, {enableHighAccuracy:true})
+        );
+
+        const latitude = position.coords.latitude.toString();
+        const longitude = position.coords.longitude.toString();
+
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const timestamp = new Date().toISOString();
+
+        const values = [[name, email, signType, unit, shift, latitude, longitude, timestamp]];
+
+        const tableName = 'Table1'; // The Table name in your Excel file
+
+        const endpoint = 
+          `https://graph.microsoft.com/v1.0/sites/${siteId}/drives/${driveId}/items/${itemId}/workbook/tables/${tableName}/rows/add`;
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({values})
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Graph API error: ${errorText}`);
+        }
+
+        alert('Form submitted successfully!');
+        loading.classList.add('hidden');
+      } catch (err) {
+        alert('Failed to submit form: ' + err.message);
+        loading.classList.add('hidden');
+      }
+    }
+
+    // On page load, check if user is already logged in
+    window.onload = async () => {
       const accounts = msalInstance.getAllAccounts();
       if (accounts.length > 0) {
-        msalInstance.acquireTokenSilent({
-          scopes: loginRequest.scopes,
-          account: accounts[0]
-        }).then(async (response) => {
-          try {
-            const userType = await fetchUserType(response.accessToken);
-            if (userType !== 'Guest') {
-              alert('Access denied. Only external guest users are allowed to login.');
-              msalInstance.logoutPopup();
-              renderLoginView();
-              return;
-            }
+        try {
+          const response = await msalInstance.acquireTokenSilent({
+            scopes: loginRequest.scopes,
+            account: accounts[0],
+          });
+          const userType = await getUserType(response.accessToken);
+          if (userType !== 'Guest') {
+            alert('Access denied. Only external guest users are allowed.');
+            await msalInstance.logoutPopup();
+            renderLogin();
+          } else {
             localStorage.setItem('staffName', accounts[0].name || '');
             localStorage.setItem('staffEmail', accounts[0].username || '');
-            renderMainFormView(true, response.accessToken);
-          } catch {
-            renderLoginView();
+            renderForm(true, response.accessToken);
           }
-        }).catch(() => {
-          renderLoginView();
-        });
+        } catch {
+          renderLogin();
+        }
       } else {
-        renderLoginView();
+        renderLogin();
       }
-    });
+    };
   </script>
 </body>
 </html>
-
