@@ -1,93 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <title>Staff Portal with Microsoft Graph Integration</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet" />
-    <!-- Load MSAL.js -->
-    <script src="https://alcdn.msauth.net/browser/2.33.0/js/msal-browser.min.js"></script>
-    <style>
-      body, html {
-        height: 100%;
-        margin: 0;
-        font-family: 'Inter', sans-serif;
-        background: #f3f4f6;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        overflow: hidden;
-        font-size: 18px; /* increased base font size */
-      }
-      #app {
-        background: white;
-        border-radius: 0.5rem;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        width: 100%;
-        max-width: 350px;
-        max-height: 600px;
-        padding: 1.5rem 2rem;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        overflow-y: auto;
-      }
-      h1 {
-        font-weight: 700;
-      }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Staff Portal - Microsoft Multi-Account Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet" />
+  <script src="https://alcdn.msauth.net/browser/2.33.0/js/msal-browser.min.js"></script>
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #f3f4f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      font-size: 18px;
+    }
+    #app {
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 350px;
+      max-height: 600px;
+      padding: 1.5rem 2rem;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow-y: auto;
+    }
+    h1 {
+      font-weight: 700;
+    }
+  </style>
 </head>
 <body>
   <div id="app" class="flex flex-col"></div>
   <script>
-    // === Configuration for MSAL and Microsoft Graph ===
     const msalConfig = {
       auth: {
-        clientId: '6f1f43fe-69f7-4e83-9621-34216252ab5f', // Your Azure AD Application (client) ID
-        authority: 'https://login.microsoftonline.com/d589f81f-3452-4876-bbcd-0b0264cf463a', // Your tenant ID URL
+        clientId: '6f1f43fe-69f7-4e83-9621-34216252ab5f', // Your app clientId
+        authority: 'https://login.microsoftonline.com/common', // Allows personal, work & school accounts
         redirectUri: window.location.origin
       },
       cache: {
-        cacheLocation: "localStorage", // recommended for session persistence
+        cacheLocation: "localStorage",
         storeAuthStateInCookie: false,
       }
     };
 
     const loginRequest = {
-      scopes: ["User.Read", "Sites.ReadWrite.All", "Files.ReadWrite.All"] // necessary Graph API permissions
+      scopes: ["User.Read", "Sites.ReadWrite.All", "Files.ReadWrite.All"]
     };
 
-    // Create MSAL PublicClientApplication instance
     const msalInstance = new msal.PublicClientApplication(msalConfig);
-
     const app = document.getElementById('app');
     const buttonBaseClasses = 'w-full font-semibold py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2';
 
-    // SharePoint site related identifiers
-    // You must obtain the correct siteId and driveId matching the staff_response Excel file location.
-    // The itemId is provided as '7E63FFAE-2009-4B2B-9722-251598ED8F99' from the sourcedoc GUID in the URL.
-    // Converting that GUID to driveItem ID is needed via API or following input below.
-    // For demonstration, we place the GUID with trimmed braces and URL encoded as itemId placeholder.
-
-    // siteId - you need to get it by API or Graph Explorer for 'https://5v73h7.sharepoint.com/sites/MAISON'
-    const siteId = '5v73h7.sharepoint.com,0957397d-58d5-4413-9c93-f3ba5fe9b2c5,7848e785-7558-4573-a138-7759f7540b9'; // <<< REPLACE with actual siteId
-
-    // driveId - typically "Documents" library drive or the drive where Excel file is stored
-    const driveId = 'b!fTlXCdVYE0Sck_O6X-myxYXnSHhYdXNFoTh3WfdUC5ErUrR-wGBJR5kZvLXZokOO'; // <<< REPLACE with actual driveId via Graph API
-
-    // itemId extracted from sourcedoc GUID without braces and URL encoding
-    // The GUID: 7E63FFAE-2009-4B2B-9722-251598ED8F99
-    // For Graph API usage, remove braces: 7E63FFAE-2009-4B2B-9722-251598ED8F99
-    // Some Graph calls may require itemId as string or base64 string, but usually just the id string will work.
+    // Replace these placeholders with your SharePoint site, drive, and item IDs as before.
+    const siteId = '0957397d-58d5-4413-9c93-f3ba5fe9b2c5,7848e785-7558-4573-a138-7759f7540b9';
+    const driveId = 'b!fTlXCdVYE0Sck_O6X-myxYXnSHhYdXNFoTh3WfdUC5ErUrR-wGBJR5kZvLXZokOO';
     const itemId = 'afe2af17-5e01-45a4-93a1-11ac4f6653d7';
-
-    const excelFileName = 'staff_response'; // Just for reference, your file is Staff_Responses.xlsx
-
-    // ------------------------------------------
-    // Below functions implement login, main form, submission, same as before,
-    // with updated MSAL and API call to append row to the Excel table called 'Table1' in your Excel file
-    // ------------------------------------------
 
     function renderLoginView() {
       app.innerHTML = `
@@ -95,15 +71,15 @@
         <form id="login-form" class="space-y-4">
           <div>
             <label for="login-name" class="block text-gray-700 font-semibold mb-1">Name</label>
-            <input type="text" id="login-name" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your name" required autocomplete="off"/>
+            <input type="text" id="login-name" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your name" required autocomplete="off" />
           </div>
           <div>
             <label for="login-staff-id" class="block text-gray-700 font-semibold mb-1">Staff ID</label>
-            <input type="text" id="login-staff-id" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your staff ID" required autocomplete="off"/>
+            <input type="text" id="login-staff-id" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your staff ID" required autocomplete="off" />
           </div>
-          <button type="submit" class="\${buttonBaseClasses} bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200">Login</button>
+          <button type="submit" class="${buttonBaseClasses} bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200">Login</button>
         </form>
-        <button id="ms-login" class="\${buttonBaseClasses} bg-green-600 text-white hover:bg-green-700 mt-4 transition-colors duration-200">Login with Microsoft Account</button>
+        <button id="ms-login" class="${buttonBaseClasses} bg-green-600 text-white hover:bg-green-700 mt-4 transition-colors duration-200">Login with Microsoft Account</button>
       `;
 
       document.getElementById('login-form').addEventListener('submit', (e) => {
@@ -120,209 +96,19 @@
       });
 
       document.getElementById('ms-login').addEventListener('click', () => {
-        msalInstance.loginPopup(loginRequest).then(loginResponse => {
-          console.log("Microsoft login success:", loginResponse);
-          alert("Microsoft login successful!");
+        msalInstance.loginPopup(loginRequest).then(response => {
+          console.log('Microsoft login success:', response);
+          alert('Microsoft login successful!');
           renderMainFormView(true);
         }).catch(error => {
           console.error(error);
-          alert("Microsoft login failed. Please try again.");
+          alert('Microsoft login failed. Please try again.');
         });
       });
     }
 
-    function renderMainFormView(msLoginSuccess = false) {
-      const staffName = localStorage.getItem('staffName') || '';
-      const staffId = localStorage.getItem('staffId') || '';
+    // ... rest of your functions, no change needed
 
-      if (!staffName || !staffId) {
-        alert('Please log in first.');
-        renderLoginView();
-        return;
-      }
-
-      app.innerHTML = `
-        <h1 id="welcome" class="text-2xl font-semibold mb-6 text-center text-gray-800">Welcome, ${staffName}!</h1>
-        <form id="main-form" class="space-y-4" novalidate>
-          <div>
-            <label for="name" class="block text-gray-700 font-semibold mb-1">Name</label>
-            <input type="text" id="name" class="w-full p-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="${staffName}" disabled />
-          </div>
-          <div>
-            <label for="staff-id" class="block text-gray-700 font-semibold mb-1">Staff ID</label>
-            <input type="text" id="staff-id" class="w-full p-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="${staffId}" disabled />
-          </div>
-          <div>
-            <label for="sign-type" class="block text-gray-700 font-semibold mb-1">Sign Type</label>
-            <select id="sign-type" class="w-full p-2 border border-gray-300 rounded-lg" required>
-              <option value="" disabled selected>Select Sign Type</option>
-              <option value="SIGN IN">SIGN IN</option>
-              <option value="SIGN OUT">SIGN OUT</option>
-            </select>
-          </div>
-          <div>
-            <label for="email" class="block text-gray-700 font-semibold mb-1">Email</label>
-            <input type="email" id="email" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="Enter your email" required autocomplete="email"/>
-          </div>
-          <div>
-            <label for="unit" class="block text-gray-700 font-semibold mb-1">Unit</label>
-            <select id="unit" class="w-full p-2 border border-gray-300 rounded-lg" required>
-              <option value="" disabled selected>Select Unit</option>
-              <option value="INBOUND">INBOUND</option>
-              <option value="OUTBOUND">OUTBOUND</option>
-              <option value="SERVICE EXCELLENCE">SERVICE EXCELLENCE</option>
-              <option value="SOCIAL MEDIA">SOCIAL MEDIA</option>
-              <option value="DIGITAL SUPPORT">DIGITAL SUPPORT</option>
-            </select>
-          </div>
-          <div>
-            <label for="shift" class="block text-gray-700 font-semibold mb-1">Shift</label>
-            <select id="shift" class="w-full p-2 border border-gray-300 rounded-lg" required>
-              <option value="" disabled selected>Select Shift</option>
-              <option value="MORNING">MORNING</option>
-              <option value="REGULAR">REGULAR</option>
-              <option value="AFTERNOON">AFTERNOON</option>
-              <option value="NIGHT">NIGHT</option>
-            </select>
-          </div>
-          <button type="submit" class="${buttonBaseClasses} bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200">Submit</button>
-          <button type="button" id="logout-btn" class="${buttonBaseClasses} bg-red-500 text-white hover:bg-red-600 transition-colors duration-200 mt-3">Logout</button>
-        </form>
-        <div id="loading-indicator" class="hidden mt-4 text-center text-blue-600 font-semibold">Submitting...</div>
-      `;
-
-      document.getElementById('logout-btn').addEventListener('click', () => {
-        if (confirm('Are you sure you want to logout?')) {
-          localStorage.clear();
-          if (msLoginSuccess) {
-            msalInstance.logoutPopup().then(() => {
-              renderLoginView();
-            }).catch(() => {
-              renderLoginView();
-            });
-          } else {
-            renderLoginView();
-          }
-        }
-      });
-
-      document.getElementById('main-form').addEventListener('submit', (e) => submitForm(e, msLoginSuccess));
-    }
-
-    async function submitForm(event, msLoginSuccess) {
-      event.preventDefault();
-      const loadingIndicator = document.getElementById('loading-indicator');
-      loadingIndicator.classList.remove('hidden');
-
-      const formData = {
-        name: document.getElementById('name').value,
-        staffId: document.getElementById('staff-id').value,
-        signType: document.getElementById('sign-type').value,
-        email: document.getElementById('email').value.trim(),
-        unit: document.getElementById('unit').value,
-        shift: document.getElementById('shift').value
-      };
-
-      // Basic validation
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailPattern.test(formData.email)) {
-        alert('Please enter a valid email address.');
-        loadingIndicator.classList.add('hidden');
-        return;
-      }
-      if (!formData.signType || !formData.unit || !formData.shift) {
-        alert('Please complete all required fields.');
-        loadingIndicator.classList.add('hidden');
-        return;
-      }
-      if (!navigator.geolocation) {
-        alert('Geolocation not supported by your browser.');
-        loadingIndicator.classList.add('hidden');
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        formData.latitude = position.coords.latitude.toString();
-        formData.longitude = position.coords.longitude.toString();
-
-        if (!msLoginSuccess) {
-          alert("Please login with Microsoft account to submit the form.");
-          loadingIndicator.classList.add('hidden');
-          return;
-        }
-
-        try {
-          const account = msalInstance.getAllAccounts()[0];
-          if (!account) throw new Error('User account not found.');
-
-          const response = await msalInstance.acquireTokenSilent({
-            scopes: loginRequest.scopes,
-            account: account
-          });
-
-          if (!response.accessToken) throw new Error('Could not acquire access token.');
-
-          const accessToken = response.accessToken;
-
-          // Prepare the row data - matching table columns in your Excel named Table.
-          const newRow = [
-            formData.name,
-            formData.staffId,
-            formData.signType,
-            formData.email,
-            formData.unit,
-            formData.shift,
-            formData.latitude,
-            formData.longitude,
-            new Date().toISOString()
-          ];
-
-          // Your Excel table name inside staff_response.xlsx (update if different)
-          const tableName = 'Table1';
-
-          // Microsoft Graph API endpoint to add a row to the table in the Excel file
-          const endpoint = `https://graph.microsoft.com/v1.0/sites/${siteId}/drives/${driveId}/items/${itemId}/workbook/tables/${tableName}/rows/add`;
-
-          const body = {
-            values: [newRow]
-          };
-
-          const graphResponse = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(body)
-          });
-
-          if (!graphResponse.ok) {
-            const errorText = await graphResponse.text();
-            throw new Error(`Graph API error: ${graphResponse.status} - ${errorText}`);
-          }
-
-          alert('Form submitted and Excel updated successfully!');
-          localStorage.clear();
-          renderLoginView();
-
-        } catch (err) {
-          console.error(err);
-          alert(`Error submitting form: ${err.message}`);
-        }
-
-        loadingIndicator.classList.add('hidden');
-
-      }, (error) => {
-        alert('Unable to retrieve location. Please enable location services.');
-        loadingIndicator.classList.add('hidden');
-      }, {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      });
-    }
-
-    // Initial load check if logged in
     window.addEventListener('DOMContentLoaded', () => {
       const name = localStorage.getItem('staffName');
       const staffId = localStorage.getItem('staffId');
@@ -335,4 +121,3 @@
   </script>
 </body>
 </html>
-
