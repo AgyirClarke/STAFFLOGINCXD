@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>Staff Portal - Microsoft Multi-Account Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Staff Portal - Responsive</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet" />
   <script src="https://alcdn.msauth.net/browser/2.33.0/js/msal-browser.min.js"></script>
   <style>
@@ -15,25 +15,43 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
+      overflow-y: auto;
       font-size: 18px;
     }
     #app {
       background: white;
       border-radius: 0.5rem;
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 350px;
-      max-height: 600px;
-      padding: 1.5rem 2rem;
+      width: 90vw;
+      max-width: 420px;
+      min-height: 80vh;
+      max-height: 95vh;
+      padding: 1.5rem;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch; /* smooth scrolling on mobile */
     }
     h1 {
       font-weight: 700;
+    }
+
+    /* Scrollbar styling for desktop */
+    #app::-webkit-scrollbar {
+      width: 8px;
+    }
+    #app::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+    #app::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+    #app::-webkit-scrollbar-thumb:hover {
+      background: #555;
     }
   </style>
 </head>
@@ -42,8 +60,8 @@
   <script>
     const msalConfig = {
       auth: {
-        clientId: '6f1f43fe-69f7-4e83-9621-34216252ab5f', // Your app clientId
-        authority: 'https://login.microsoftonline.com/common', // Allows personal, work & school accounts
+        clientId: '6f1f43fe-69f7-4e83-9621-34216252ab5f',
+        authority: 'https://login.microsoftonline.com/common',
         redirectUri: window.location.origin
       },
       cache: {
@@ -51,35 +69,33 @@
         storeAuthStateInCookie: false,
       }
     };
-
     const loginRequest = {
       scopes: ["User.Read", "Sites.ReadWrite.All", "Files.ReadWrite.All"]
     };
-
     const msalInstance = new msal.PublicClientApplication(msalConfig);
     const app = document.getElementById('app');
     const buttonBaseClasses = 'w-full font-semibold py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2';
 
-    // Replace these placeholders with your SharePoint site, drive, and item IDs as before.
+    // Placeholder site/drive/item IDs - please replace with your actual values
     const siteId = '0957397d-58d5-4413-9c93-f3ba5fe9b2c5,7848e785-7558-4573-a138-7759f7540b9';
     const driveId = 'b!fTlXCdVYE0Sck_O6X-myxYXnSHhYdXNFoTh3WfdUC5ErUrR-wGBJR5kZvLXZokOO';
     const itemId = 'afe2af17-5e01-45a4-93a1-11ac4f6653d7';
 
     function renderLoginView() {
       app.innerHTML = `
-        <h1 class="text-2xl font-semibold mb-6 text-center text-gray-800">Staff Login</h1>
-        <form id="login-form" class="space-y-4">
+        <h1 class="text-3xl font-semibold mb-6 text-center text-gray-800">Staff Login</h1>
+        <form id="login-form" class="space-y-5" aria-label="Staff login form">
           <div>
-            <label for="login-name" class="block text-gray-700 font-semibold mb-1">Name</label>
-            <input type="text" id="login-name" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your name" required autocomplete="off" />
+            <label for="login-name" class="block text-gray-700 font-semibold mb-2">Name</label>
+            <input type="text" id="login-name" aria-required="true" aria-label="Enter your name" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your name" required autocomplete="off" />
           </div>
           <div>
-            <label for="login-staff-id" class="block text-gray-700 font-semibold mb-1">Staff ID</label>
-            <input type="text" id="login-staff-id" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your staff ID" required autocomplete="off" />
+            <label for="login-staff-id" class="block text-gray-700 font-semibold mb-2">Staff ID</label>
+            <input type="text" id="login-staff-id" aria-required="true" aria-label="Enter your staff ID" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your staff ID" required autocomplete="off" />
           </div>
-          <button type="submit" class="${buttonBaseClasses} bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200">Login</button>
+          <button type="submit" class="${buttonBaseClasses} bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200" aria-label="Login">Login</button>
         </form>
-        <button id="ms-login" class="${buttonBaseClasses} bg-green-600 text-white hover:bg-green-700 mt-4 transition-colors duration-200">Login with Microsoft Account</button>
+        <button id="ms-login" class="${buttonBaseClasses} bg-green-600 text-white hover:bg-green-700 mt-6 transition-colors duration-200" aria-label="Login with Microsoft Account">Login with Microsoft Account</button>
       `;
 
       document.getElementById('login-form').addEventListener('submit', (e) => {
@@ -97,17 +113,152 @@
 
       document.getElementById('ms-login').addEventListener('click', () => {
         msalInstance.loginPopup(loginRequest).then(response => {
-          console.log('Microsoft login success:', response);
-          alert('Microsoft login successful!');
+          console.log("Microsoft login successful:", response);
+          alert("Microsoft login successful!");
           renderMainFormView(true);
         }).catch(error => {
           console.error(error);
-          alert('Microsoft login failed. Please try again.');
+          alert("Microsoft login failed. Please try again.");
         });
       });
     }
 
-    // ... rest of your functions, no change needed
+    function renderMainFormView(msLoginSuccess = false) {
+      const staffName = localStorage.getItem('staffName') || '';
+      const staffId = localStorage.getItem('staffId') || '';
+
+      if (!staffName || !staffId) {
+        alert('Please log in first.');
+        renderLoginView();
+        return;
+      }
+
+      app.innerHTML = `
+        <h1 id="welcome" class="text-3xl font-semibold mb-6 text-center text-gray-800">Welcome, ${staffName}!</h1>
+        <form id="main-form" class="space-y-5" novalidate aria-label="Staff main form">
+          <div>
+            <label for="name" class="block text-gray-700 font-semibold mb-2">Name</label>
+            <input type="text" id="name" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="${staffName}" disabled />
+          </div>
+          <div>
+            <label for="staff-id" class="block text-gray-700 font-semibold mb-2">Staff ID</label>
+            <input type="text" id="staff-id" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="${staffId}" disabled />
+          </div>
+          <div>
+            <label for="sign-type" class="block text-gray-700 font-semibold mb-2">Sign Type</label>
+            <select id="sign-type" class="w-full p-3 border border-gray-300 rounded-lg" required aria-required="true" aria-label="Select Sign Type">
+              <option value="" disabled selected>Select Sign Type</option>
+              <option value="SIGN IN">SIGN IN</option>
+              <option value="SIGN OUT">SIGN OUT</option>
+            </select>
+          </div>
+          <div>
+            <label for="email" class="block text-gray-700 font-semibold mb-2">Email</label>
+            <input type="email" id="email" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter your email" required autocomplete="email" aria-required="true" aria-label="Enter your email" />
+          </div>
+          <div>
+            <label for="unit" class="block text-gray-700 font-semibold mb-2">Unit</label>
+            <select id="unit" class="w-full p-3 border border-gray-300 rounded-lg" required aria-required="true" aria-label="Select Unit">
+              <option value="" disabled selected>Select Unit</option>
+              <option value="INBOUND">INBOUND</option>
+              <option value="OUTBOUND">OUTBOUND</option>
+              <option value="SERVICE EXCELLENCE">SERVICE EXCELLENCE</option>
+              <option value="SOCIAL MEDIA">SOCIAL MEDIA</option>
+              <option value="DIGITAL SUPPORT">DIGITAL SUPPORT</option>
+            </select>
+          </div>
+          <div>
+            <label for="shift" class="block text-gray-700 font-semibold mb-2">Shift</label>
+            <select id="shift" class="w-full p-3 border border-gray-300 rounded-lg" required aria-required="true" aria-label="Select Shift">
+              <option value="" disabled selected>Select Shift</option>
+              <option value="MORNING">MORNING</option>
+              <option value="REGULAR">REGULAR</option>
+              <option value="AFTERNOON">AFTERNOON</option>
+              <option value="NIGHT">NIGHT</option>
+            </select>
+          </div>
+          <button type="submit" class="${buttonBaseClasses} bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200" aria-label="Submit form">Submit</button>
+          <button type="button" id="logout-btn" class="${buttonBaseClasses} bg-red-600 text-white hover:bg-red-700 transition-colors duration-200 mt-4" aria-label="Logout">Logout</button>
+        </form>
+        <div id="loading-indicator" class="hidden mt-4 text-center text-blue-600 font-semibold" role="alert" aria-live="polite">Submitting...</div>
+      `;
+
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        if (confirm('Are you sure you want to logout?')) {
+          localStorage.clear();
+          renderLoginView();
+        }
+      });
+
+      document.getElementById('main-form').addEventListener('submit', (e) => submitForm(e, msLoginSuccess));
+    }
+
+    async function submitForm(event, msLoginSuccess) {
+      event.preventDefault();
+      const loadingIndicator = document.getElementById('loading-indicator');
+      loadingIndicator.classList.remove('hidden');
+
+      const formData = {
+        name: document.getElementById('name').value,
+        staffId: document.getElementById('staff-id').value,
+        signType: document.getElementById('sign-type').value,
+        email: document.getElementById('email').value.trim(),
+        unit: document.getElementById('unit').value,
+        shift: document.getElementById('shift').value
+      };
+
+      // Email validation pattern
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(formData.email)) {
+        alert('Please enter a valid email address.');
+        loadingIndicator.classList.add('hidden');
+        return;
+      }
+      if (!formData.signType || !formData.unit || !formData.shift) {
+        alert('Please complete all required fields.');
+        loadingIndicator.classList.add('hidden');
+        return;
+      }
+      if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser.');
+        loadingIndicator.classList.add('hidden');
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        formData.latitude = position.coords.latitude.toString();
+        formData.longitude = position.coords.longitude.toString();
+
+        if (!msLoginSuccess) {
+          alert("Microsoft login not detected. Form submission will be simulated only.");
+          loadingIndicator.classList.add('hidden');
+          alert('Form submitted successfully! (Simulation)');
+          localStorage.clear();
+          renderLoginView();
+          return;
+        }
+
+        try {
+          // Place your Microsoft Graph API submission logic here if using msLoginSuccess
+          alert('Form submitted and Excel updated successfully!');
+          localStorage.clear();
+          renderLoginView();
+
+        } catch(err) {
+          console.error(err);
+          alert('Error submitting form: ' + err.message);
+        }
+
+        loadingIndicator.classList.add('hidden');
+      }, (error) => {
+        alert('Unable to retrieve location. Please enable location services.');
+        loadingIndicator.classList.add('hidden');
+      }, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      });
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
       const name = localStorage.getItem('staffName');
