@@ -1,113 +1,9 @@
-4f6;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 1rem;
-      box-sizing: border-box;
-      font-size: 16px;
-      -webkit-overflow-scrolling: touch;
-      overflow-y: auto;
-    }
-
-    #app {
-      background: white;
-      border-radius: 0.75rem;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.12);
-      width: 100%;
-      max-width: 460px;
-      min-height: 600px;
-      padding: 2.5rem 2rem;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    h1 {
-      font-weight: 700;
-      font-size: 1.75rem;
-      text-align: center;
-      margin-bottom: 1.5rem;
-      color: #111827; /* Tailwind Gray-900 */
-    }
-
-    form {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-    }
-
-    label {
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      display: block;
-      color: #374151; /* Tailwind Gray-700 */
-    }
-
-    input[type="text"],
-    input[type="email"],
-    select {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border: 1.5px solid #d1d5db; /* Tailwind Gray-300 */
-      border-radius: 0.5rem;
-      font-size: 1rem;
-      color: #111827; /* Gray-900 */
-      transition: border-color 0.2s ease-in-out;
-    }
-
-    input[type="text"]:focus,
-    input[type="email"]:focus,
-    select:focus {
-      outline: none;
-      border-color: #2563eb; /* Tailwind Blue-600 */
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
-    }
-
-    button[type="submit"] {
-      padding: 0.85rem 0;
-      background-color: #2563eb; /* Blue-600 */
-      color: white;
-      font-weight: 700;
-      font-size: 1.125rem;
-      border: none;
-      border-radius: 0.6rem;
-      cursor: pointer;
-      transition: background-color 0.2s ease-in-out;
-      user-select: none;
-    }
-
-    button[type="submit"]:hover,
-    button[type="submit"]:focus {
-      background-color: #1d4ed8; /* Blue-700 */
-      outline: none;
-    }
-
-    #loading {
-      margin-top: 1.5rem;
-      font-weight: 600;
-      color: #2563eb; /* Blue-600 */
-      text-align: center;
-    }
-
-    /* Prevent horizontal overflow on small devices */
-    @media (max-width: 380px) {
-      #app {
-        padding: 2rem 1rem;
-      }
-      input[type="text"],
-      input[type="email"],
-      select,
-      button[type="submit"] {
-        font-size: 0.9rem;
-      }
-    }
-  </style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Staff Portal - Guest Form Submission</title>
 </head>
 <body>
   <div id="app"></div>
@@ -115,32 +11,29 @@
   <script>
     const app = document.getElementById('app');
 
-    // Replace this with your actual backend API endpoint URL
-    const backendApiUrl = 'https://your-backend.example.com/api/submit-form';
-
     function renderForm() {
-      app.innerHTML = \`
+      app.innerHTML = `
         <h1>Staff Sign In/Out Form</h1>
-        <form id="staffForm" novalidate>
+        <form id="staffForm">
           <div>
-            <label for="name">Name</label>
-            <input type="text" id="name" name="name" required placeholder="Enter your full name" autocomplete="name" />
+            <label for="name">Name</label><br/>
+            <input type="text" id="name" required placeholder="Enter your name" />
           </div>
           <div>
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" required placeholder="example@domain.com" autocomplete="email" />
+            <label for="email">Email</label><br/>
+            <input type="email" id="email" required placeholder="Enter your email" />
           </div>
           <div>
-            <label for="signType">Sign Type</label>
-            <select id="signType" name="signType" required>
+            <label for="signType">Sign Type</label><br/>
+            <select id="signType" required>
               <option value="" disabled selected>Select Sign Type</option>
               <option value="SIGN IN">SIGN IN</option>
               <option value="SIGN OUT">SIGN OUT</option>
             </select>
           </div>
           <div>
-            <label for="unit">Unit</label>
-            <select id="unit" name="unit" required>
+            <label for="unit">Unit</label><br/>
+            <select id="unit" required>
               <option value="" disabled selected>Select Unit</option>
               <option value="INBOUND">INBOUND</option>
               <option value="OUTBOUND">OUTBOUND</option>
@@ -150,8 +43,8 @@
             </select>
           </div>
           <div>
-            <label for="shift">Shift</label>
-            <select id="shift" name="shift" required>
+            <label for="shift">Shift</label><br/>
+            <select id="shift" required>
               <option value="" disabled selected>Select Shift</option>
               <option value="MORNING">MORNING</option>
               <option value="REGULAR">REGULAR</option>
@@ -161,11 +54,10 @@
           </div>
           <button type="submit">Submit</button>
         </form>
-        <div id="loading" class="hidden" aria-live="polite" aria-atomic="true">Submitting...</div>
-      \`;
+        <div id="loading" style="display:none;">Submitting...</div>
+      `;
 
-      const form = document.getElementById('staffForm');
-      form.onsubmit = async (e) => {
+      document.getElementById('staffForm').onsubmit = async e => {
         e.preventDefault();
         await submitForm();
       };
@@ -173,7 +65,7 @@
 
     async function submitForm() {
       const loading = document.getElementById('loading');
-      loading.classList.remove('hidden');
+      loading.style.display = 'block';
 
       const name = document.getElementById('name').value.trim();
       const email = document.getElementById('email').value.trim();
@@ -183,7 +75,7 @@
 
       if (!name || !email || !signType || !unit || !shift) {
         alert('Please fill all required fields.');
-        loading.classList.add('hidden');
+        loading.style.display = 'none';
         return;
       }
 
@@ -207,6 +99,9 @@
           timestamp
         };
 
+        // Replace the URL below with your backend endpoint
+        const backendApiUrl = 'https://your-backend.example.com/api/submit-form';
+
         const response = await fetch(backendApiUrl, {
           method: 'POST',
           headers: {
@@ -216,7 +111,7 @@
         });
 
         if (!response.ok) {
-          let errorText = await response.text();
+          const errorText = await response.text();
           throw new Error(errorText || 'Failed to submit form');
         }
 
@@ -226,7 +121,7 @@
       } catch (err) {
         alert('Failed to submit form: ' + (err.message || err));
       } finally {
-        loading.classList.add('hidden');
+        loading.style.display = 'none';
       }
     }
 
@@ -236,3 +131,4 @@
   </script>
 </body>
 </html>
+
