@@ -42,8 +42,11 @@
   <script>
     const app = document.getElementById('app');
 
+    // Replace this with your actual backend API endpoint URL
+    const backendApiUrl = 'https://your-backend.example.com/api/submit-form';
+
     function renderForm() {
-      app.innerHTML = `
+      app.innerHTML = \`
         <h1 class="text-2xl mb-6 text-center">Staff Sign In/Out Form</h1>
         <form id="staffForm" class="space-y-6">
           <div>
@@ -86,7 +89,7 @@
           <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition">Submit</button>
         </form>
         <div id="loading" class="hidden mt-4 text-center font-semibold text-blue-600">Submitting...</div>
-      `;
+      \`;
 
       document.getElementById('staffForm').onsubmit = async e => {
         e.preventDefault();
@@ -120,11 +123,8 @@
         const longitude = position.coords.longitude.toString();
         const timestamp = new Date().toISOString();
 
-        // Prepare data for submission (replace this with actual submission logic)
-        // As the original submission was to Microsoft Graph API with tokens,
-        // here we just log the data for demonstration.
-
-        console.log({
+        // Prepare payload to send to backend
+        const payload = {
           name,
           email,
           signType,
@@ -133,16 +133,27 @@
           latitude,
           longitude,
           timestamp
+        };
+
+        const response = await fetch(backendApiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
         });
 
-        // You should replace the below with your actual data handling logic:
-        // For example: send a POST request to your backend or a serverless function
-        // which can handle the actual submission securely.
+        if (!response.ok) {
+          let errorText = await response.text();
+          throw new Error(errorText || 'Failed to submit form');
+        }
 
-        alert('Form submitted successfully!\nCheck console for submitted data.');
+        alert('Form submitted successfully!');
+        // Optionally reset the form
+        document.getElementById('staffForm').reset();
 
       } catch (err) {
-        alert('Failed to get location or submit form: ' + err.message);
+        alert('Failed to submit form: ' + (err.message || err));
       } finally {
         loading.classList.add('hidden');
       }
