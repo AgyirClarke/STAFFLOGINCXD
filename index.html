@@ -1,39 +1,112 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Staff Portal - Guest Form Submission</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet" />
-  <style>
-    body, html {
-      height: 100%;
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: #f3f4f6;
+4f6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow-y: auto;
-      font-size: 18px;
       padding: 1rem;
+      box-sizing: border-box;
+      font-size: 16px;
+      -webkit-overflow-scrolling: touch;
+      overflow-y: auto;
     }
+
     #app {
       background: white;
-      border-radius: 0.5rem;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      border-radius: 0.75rem;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.12);
       width: 100%;
-      max-width: 480px;
+      max-width: 460px;
       min-height: 600px;
-      padding: 2rem;
+      padding: 2.5rem 2rem;
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
+
     h1 {
       font-weight: 700;
+      font-size: 1.75rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #111827; /* Tailwind Gray-900 */
     }
-    .hidden { display: none; }
+
+    form {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: block;
+      color: #374151; /* Tailwind Gray-700 */
+    }
+
+    input[type="text"],
+    input[type="email"],
+    select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1.5px solid #d1d5db; /* Tailwind Gray-300 */
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      color: #111827; /* Gray-900 */
+      transition: border-color 0.2s ease-in-out;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    select:focus {
+      outline: none;
+      border-color: #2563eb; /* Tailwind Blue-600 */
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+    }
+
+    button[type="submit"] {
+      padding: 0.85rem 0;
+      background-color: #2563eb; /* Blue-600 */
+      color: white;
+      font-weight: 700;
+      font-size: 1.125rem;
+      border: none;
+      border-radius: 0.6rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+      user-select: none;
+    }
+
+    button[type="submit"]:hover,
+    button[type="submit"]:focus {
+      background-color: #1d4ed8; /* Blue-700 */
+      outline: none;
+    }
+
+    #loading {
+      margin-top: 1.5rem;
+      font-weight: 600;
+      color: #2563eb; /* Blue-600 */
+      text-align: center;
+    }
+
+    /* Prevent horizontal overflow on small devices */
+    @media (max-width: 380px) {
+      #app {
+        padding: 2rem 1rem;
+      }
+      input[type="text"],
+      input[type="email"],
+      select,
+      button[type="submit"] {
+        font-size: 0.9rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -47,27 +120,27 @@
 
     function renderForm() {
       app.innerHTML = \`
-        <h1 class="text-2xl mb-6 text-center">Staff Sign In/Out Form</h1>
-        <form id="staffForm" class="space-y-6">
+        <h1>Staff Sign In/Out Form</h1>
+        <form id="staffForm" novalidate>
           <div>
-            <label for="name" class="block mb-2 font-semibold">Name</label>
-            <input type="text" id="name" required placeholder="Enter your name" class="w-full p-3 border rounded" />
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required placeholder="Enter your full name" autocomplete="name" />
           </div>
           <div>
-            <label for="email" class="block mb-2 font-semibold">Email</label>
-            <input type="email" id="email" required placeholder="Enter your email" class="w-full p-3 border rounded" />
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required placeholder="example@domain.com" autocomplete="email" />
           </div>
           <div>
-            <label for="signType" class="block mb-2 font-semibold">Sign Type</label>
-            <select id="signType" required class="w-full p-3 border rounded">
+            <label for="signType">Sign Type</label>
+            <select id="signType" name="signType" required>
               <option value="" disabled selected>Select Sign Type</option>
               <option value="SIGN IN">SIGN IN</option>
               <option value="SIGN OUT">SIGN OUT</option>
             </select>
           </div>
           <div>
-            <label for="unit" class="block mb-2 font-semibold">Unit</label>
-            <select id="unit" required class="w-full p-3 border rounded">
+            <label for="unit">Unit</label>
+            <select id="unit" name="unit" required>
               <option value="" disabled selected>Select Unit</option>
               <option value="INBOUND">INBOUND</option>
               <option value="OUTBOUND">OUTBOUND</option>
@@ -77,8 +150,8 @@
             </select>
           </div>
           <div>
-            <label for="shift" class="block mb-2 font-semibold">Shift</label>
-            <select id="shift" required class="w-full p-3 border rounded">
+            <label for="shift">Shift</label>
+            <select id="shift" name="shift" required>
               <option value="" disabled selected>Select Shift</option>
               <option value="MORNING">MORNING</option>
               <option value="REGULAR">REGULAR</option>
@@ -86,12 +159,13 @@
               <option value="NIGHT">NIGHT</option>
             </select>
           </div>
-          <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition">Submit</button>
+          <button type="submit">Submit</button>
         </form>
-        <div id="loading" class="hidden mt-4 text-center font-semibold text-blue-600">Submitting...</div>
+        <div id="loading" class="hidden" aria-live="polite" aria-atomic="true">Submitting...</div>
       \`;
 
-      document.getElementById('staffForm').onsubmit = async e => {
+      const form = document.getElementById('staffForm');
+      form.onsubmit = async (e) => {
         e.preventDefault();
         await submitForm();
       };
@@ -114,16 +188,14 @@
       }
 
       try {
-        // Get geolocation
-        const position = await new Promise((res, rej) => 
-          navigator.geolocation.getCurrentPosition(res, rej, {enableHighAccuracy:true})
+        const position = await new Promise((resolve, reject) =>
+          navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true })
         );
 
         const latitude = position.coords.latitude.toString();
         const longitude = position.coords.longitude.toString();
         const timestamp = new Date().toISOString();
 
-        // Prepare payload to send to backend
         const payload = {
           name,
           email,
@@ -149,7 +221,6 @@
         }
 
         alert('Form submitted successfully!');
-        // Optionally reset the form
         document.getElementById('staffForm').reset();
 
       } catch (err) {
@@ -159,11 +230,9 @@
       }
     }
 
-    // Render the form on page load
     window.onload = () => {
       renderForm();
     };
   </script>
 </body>
 </html>
-
