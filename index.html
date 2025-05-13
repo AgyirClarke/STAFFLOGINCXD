@@ -99,10 +99,112 @@
           timestamp
         };
 
-        // Replace the URL below with your backend endpoint
-        const backendApiUrl = 'https://your-backend.example.com/api/submit-form';
+        // Replace the URL below with your Zoho Flow webhook URL
+        const zohoFlowWebhookUrl = '<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Staff Portal - Guest Form Submission</title>
+</head>
+<body>
+  <div id="app"></div>
 
-        const response = await fetch(backendApiUrl, {
+  <script>
+    const app = document.getElementById('app');
+
+    function renderForm() {
+      app.innerHTML = `
+        <h1>Staff Sign In/Out Form</h1>
+        <form id="staffForm">
+          <div>
+            <label for="name">Name</label><br/>
+            <input type="text" id="name" required placeholder="Enter your name" />
+          </div>
+          <div>
+            <label for="email">Email</label><br/>
+            <input type="email" id="email" required placeholder="Enter your email" />
+          </div>
+          <div>
+            <label for="signType">Sign Type</label><br/>
+            <select id="signType" required>
+              <option value="" disabled selected>Select Sign Type</option>
+              <option value="SIGN IN">SIGN IN</option>
+              <option value="SIGN OUT">SIGN OUT</option>
+            </select>
+          </div>
+          <div>
+            <label for="unit">Unit</label><br/>
+            <select id="unit" required>
+              <option value="" disabled selected>Select Unit</option>
+              <option value="INBOUND">INBOUND</option>
+              <option value="OUTBOUND">OUTBOUND</option>
+              <option value="SERVICE EXCELLENCE">SERVICE EXCELLENCE</option>
+              <option value="SOCIAL MEDIA">SOCIAL MEDIA</option>
+              <option value="DIGITAL SUPPORT">DIGITAL SUPPORT</option>
+            </select>
+          </div>
+          <div>
+            <label for="shift">Shift</label><br/>
+            <select id="shift" required>
+              <option value="" disabled selected>Select Shift</option>
+              <option value="MORNING">MORNING</option>
+              <option value="REGULAR">REGULAR</option>
+              <option value="AFTERNOON">AFTERNOON</option>
+              <option value="NIGHT">NIGHT</option>
+            </select>
+          </div>
+          <button type="submit">Submit</button>
+        </form>
+        <div id="loading" style="display:none;">Submitting...</div>
+      `;
+
+      document.getElementById('staffForm').onsubmit = async e => {
+        e.preventDefault();
+        await submitForm();
+      };
+    }
+
+    async function submitForm() {
+      const loading = document.getElementById('loading');
+      loading.style.display = 'block';
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const signType = document.getElementById('signType').value;
+      const unit = document.getElementById('unit').value;
+      const shift = document.getElementById('shift').value;
+
+      if (!name || !email || !signType || !unit || !shift) {
+        alert('Please fill all required fields.');
+        loading.style.display = 'none';
+        return;
+      }
+
+      try {
+        const position = await new Promise((resolve, reject) =>
+          navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true })
+        );
+
+        const latitude = position.coords.latitude.toString();
+        const longitude = position.coords.longitude.toString();
+        const timestamp = new Date().toISOString();
+
+        const payload = {
+          name,
+          email,
+          signType,
+          unit,
+          shift,
+          latitude,
+          longitude,
+          timestamp
+        };
+
+        // Replace the URL below with your Zoho Flow webhook URL
+        const zohoFlowWebhookUrl = 'https://flow.zoho.com/886725383/flow/webhook/incoming?zapikey=1001.3538a5c480f5b0664a334951e5e71b64.8d5fa1bd9d7155cf7fc779630b881665&isdebug=true'; // REPLACE with your Zoho Flow webhook URL
+
+        const response = await fetch(zohoFlowWebhookUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -119,16 +221,23 @@
         document.getElementById('staffForm').reset();
 
       } catch (err) {
-        alert('Failed to submit form: ' + (err.message || err));
-      } finally {
-        loading.style.display = 'none';
-      }
-    }
+        alert('Failed to submit form: ' + (err.message ||'; // REPLACE with your Zoho Flow webhook URL
 
-    window.onload = () => {
-      renderForm();
-    };
-  </script>
-</body>
-</html>
+        const response = await fetch(zohoFlowWebhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
 
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || 'Failed to submit form');
+        }
+
+        alert('Form submitted successfully!');
+        document.getElementById('staffForm').reset();
+
+      } catch (err) {
+        alert('Failed to submit form: ' + (err.message ||
