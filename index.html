@@ -92,7 +92,7 @@
         const msalConfig = {
             auth: {
                 clientId: "71f0c9d0-d2eb-4d3f-aebb-7adb7498fce2",
-                authority: "https://login.microsoftonline.com/d589f81f-3452-4876-bbcd-0b0264cf463a/v2.0",
+                authority: "https://login.microsoftonline.com/common/v2.0",
                 redirectUri: "https://agyirclarke.github.io"
             },
             cache: {
@@ -107,7 +107,7 @@
         const errorMessage = document.getElementById('errorMessage');
 
         const loginRequest = {
-            scopes: ["https://5v73h7.sharepoint.com/.default"]
+            scopes: ["User.Read", "https://5v73h7.sharepoint.com/.default"]
         };
 
         let account;
