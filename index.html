@@ -1,110 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Staff Login Form</title>
-    <link href="https://unpkg.com/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet" />
-    <style>
-        body { background-color: #f9fafb; }
-        .container { max-width: 400px; margin: 40px auto; padding: 20px; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .error { color: #dc2626; font-size: 0.875rem; margin-top: 4px; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Staff Login Form with Microsoft Form Embed</title>
+  <link href="https://unpkg.com/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    body { background-color: #f9fafb; }
+    .container { max-width: 450px; margin: 40px auto; padding: 20px; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .error { color: #dc2626; font-size: 0.875rem; margin-top: 4px; }
+    .info { margin-top: 2rem; font-size: 0.875rem; color: #444444; }
+    iframe { 
+      border: none; 
+      width: 100%; 
+      min-height: 480px; 
+      border-radius: 12px; 
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      margin-top: 40px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2 class="text-2xl font-semibold mb-4">Staff Login Form</h2>
-        <form id="staffForm" onsubmit="submitForm(event)">
-            <label>Name</label>
-            <input type="text" id="name" class="w-full p-2 mb-4 border rounded" placeholder="Enter your name" />
-            <label>Staff ID</label>
-            <input type="text" id="staffID" class="w-full p-2 mb-4 border rounded" placeholder="Enter your staff ID" />
-            <label>Unit</label>
-            <select id="unit" class="w-full p-2 mb-4 border rounded">
-                <option value="">Select Unit</option>
-                <option value="INBOUND">INBOUND</option>
-                <option value="OUTBOUND">OUTBOUND</option>
-                <option value="SERVICE EXCELLENCE">SERVICE EXCELLENCE</option>
-                <option value="SOCIAL MEDIA">SOCIAL MEDIA</option>
-                <option value="DIGITAL SUPPORT">DIGITAL SUPPORT</option>
-            </select>
-            <label>Shift</label>
-            <select id="shift" class="w-full p-2 mb-4 border rounded">
-                <option value="">Select Shift</option>
-                <option value="MORNING">MORNING</option>
-                <option value="REGULAR">REGULAR</option>
-                <option value="AFTERNOON">AFTERNOON</option>
-                <option value="NIGHT">NIGHT</option>
-            </select>
-            <input type="hidden" id="latitude" />
-            <input type="hidden" id="longitude" />
-            <button type="submit" class="w-full p-2 bg-blue-600 text-white rounded">Submit</button>
-            <p id="errorMessage" class="error"></p>
-        </form>
-    </div>
-    <script>
-        console.log("Script loaded");
+  <div class="container">
+    <h2 class="text-2xl font-semibold mb-4">Staff Login Form</h2>
+    <form id="staffForm" onsubmit="submitForm(event)">
+      <label>Name</label>
+      <input type="text" id="name" class="w-full p-2 mb-4 border rounded" placeholder="Enter your name" required />
 
-        function submitForm(event) {
-            console.log("submitForm called");
-            event.preventDefault();
-            const name = document.getElementById("name").value.trim();
-            const staffID = document.getElementById("staffID").value.trim();
-            const unit = document.getElementById("unit").value.trim();
-            const shift = document.getElementById("shift").value.trim();
-            const latitude = document.getElementById("latitude").value.trim();
-            const longitude = document.getElementById("longitude").value.trim();
-            const errorMessage = document.getElementById("errorMessage");
+      <label>eMail</label>
+      <input type="email" id="email" class="w-full p-2 mb-4 border rounded" placeholder="Enter your email" required />
 
-            if (!name || !staffID || !unit || !shift || !latitude || !longitude) {
-                errorMessage.textContent = "Please fill in all required fields and enable location.";
-                console.log("Validation failed");
-                return;
-            }
-            // Simulate form submission
-            alert(`Form submitted successfully!
-Name: ${name}
-Staff ID: ${staffID}
-Unit: ${unit}
-Shift: ${shift}
-Latitude: ${latitude}
-Longitude: ${longitude}`);
-            console.log("Form data:", {
-                Name: name,
-                "Staff ID": staffID,
-                Unit: unit,
-                Shift: shift,
-                Latitude: latitude,
-                Longitude: longitude
-            });
-            errorMessage.textContent = "";
+      <label>Staff ID</label>
+      <input type="text" id="staffID" class="w-full p-2 mb-4 border rounded" placeholder="Enter your staff ID" required />
+
+      <label>Unit</label>
+      <select id="unit" class="w-full p-2 mb-2 border rounded" onchange="toggleOtherUnit(this.value)" required>
+        <option value="">Select Unit</option>
+        <option value="INBOUND">INBOUND</option>
+        <option value="OUTBOUND">OUTBOUND</option>
+        <option value="SERVICE EXCELLENCE">SERVICE EXCELLENCE</option>
+        <option value="SOCIAL MEDIA">SOCIAL MEDIA</option>
+        <option value="DIGITAL SUPPORT">DIGITAL SUPPORT</option>
+        <option value="OTHER">Other</option>
+      </select>
+      <input type="text" id="otherUnit" class="w-full p-2 mb-4 border rounded hidden" placeholder="Please specify other unit" />
+
+      <label>Shift</label>
+      <select id="shift" class="w-full p-2 mb-4 border rounded" required>
+        <option value="">Select Shift</option>
+        <option value="MORNING">MORNING</option>
+        <option value="REGULAR">REGULAR</option>
+        <option value="AFTERNOON">AFTERNOON</option>
+        <option value="NIGHT">NIGHT</option>
+      </select>
+
+      <label>Sign Type</label>
+      <select id="signType" class="w-full p-2 mb-4 border rounded" required>
+        <option value="">Select Sign Type</option>
+        <option value="SIGN IN">Sign in</option>
+        <option value="SIGN OUT">Sign out</option>
+      </select>
+
+      <input type="hidden" id="latitude" />
+      <input type="hidden" id="longitude" />
+
+      <button type="submit" class="w-full p-2 bg-blue-600 text-white rounded">Submit</button>
+      <p id="errorMessage" class="error"></p>
+    </form>
+
+    <iframe 
+      src="https://forms.office.com/Pages/ResponsePage.aspx?id=ncsdCOre-EK0LnfpGwiDupUpW0id99hFovCIhmh5Ee1UMVVPU1Q5QTZTTDZQRlo0NFZKRVFMMUdHUi4u&embed=true" 
+      allowfullscreen 
+      webkitallowfullscreen 
+      mozallowfullscreen 
+      msallowfullscreen
+      title="Microsoft Form">
+    </iframe>
+  </div>
+
+  <script>
+    function toggleOtherUnit(value) {
+      const otherUnitInput = document.getElementById('otherUnit');
+      if (value === 'OTHER') {
+        otherUnitInput.classList.remove('hidden');
+      } else {
+        otherUnitInput.classList.add('hidden');
+        otherUnitInput.value = '';
+      }
+    }
+
+    function submitForm(event) {
+      event.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const staffID = document.getElementById("staffID").value.trim();
+      let unit = document.getElementById("unit").value.trim();
+      const otherUnit = document.getElementById("otherUnit").value.trim();
+      const shift = document.getElementById("shift").value.trim();
+      const signType = document.getElementById("signType").value.trim();
+      const latitude = document.getElementById("latitude").value.trim();
+      const longitude = document.getElementById("longitude").value.trim();
+      const errorMessage = document.getElementById("errorMessage");
+
+      if (unit === 'OTHER') {
+        if (!otherUnit) {
+          errorMessage.textContent = "Please specify the other unit.";
+          return;
         }
+        unit = otherUnit;
+      }
 
-        function getLocation() {
-            console.log("getLocation called");
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        console.log("Location retrieved", position.coords);
-                        document.getElementById("latitude").value = position.coords.latitude;
-                        document.getElementById("longitude").value = position.coords.longitude;
-                    },
-                    (error) => {
-                        console.error("Location error:", error);
-                        document.getElementById("errorMessage").textContent = "Location access denied. Please enable location services.";
-                    }
-                );
-            } else {
-                console.log("Geolocation not supported");
-                document.getElementById("errorMessage").textContent = "Geolocation is not supported by this browser.";
-            }
-        }
+      if (!name || !email || !staffID || !unit || !shift || !signType || !latitude || !longitude) {
+        errorMessage.textContent = "Please fill in all required fields and enable location.";
+        return;
+      }
 
-        window.onload = () => {
-            console.log("Window loaded");
-            getLocation();
-        };
-    </script>
+      errorMessage.textContent = "";
+
+      // Save or process form data here (e.g., send to backend or local storage)
+      console.log("Staff Form Data:", {
+        Name: name,
+        eMail: email,
+        "Staff ID": staffID,
+        Unit: unit,
+        Shift: shift,
+        "Sign Type": signType,
+        Latitude: latitude,
+        Longitude: longitude,
+        Timestamp: new Date().toISOString()
+      });
+
+      alert("Thanks for your submission!");
+    }
+
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            document.getElementById("latitude").value = position.coords.latitude;
+            document.getElementById("longitude").value = position.coords.longitude;
+          },
+          (error) => {
+            document.getElementById("errorMessage").textContent = "Location access denied. Please enable location services.";
+          }
+        );
+      } else {
+        document.getElementById("errorMessage").textContent = "Geolocation is not supported by this browser.";
+      }
+    }
+
+    window.onload = getLocation;
+  </script>
 </body>
 </html>
-
