@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Staff Login Form with SharePoint Integration & Token Authentication</title>
+    <title>Staff Login Form with SharePoint Integration</title>
     <link href="https://unpkg.com/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet" />
     <script src="https://alcdn.msauth.net/browser/2.19.0/js/msal-browser.min.js"></script>
     <style>
@@ -32,9 +32,9 @@
 </head>
 <body>
     <div class="container">
-        <h2 class="text-2xl font-semibold mb-4">Staff Token Form</h2>
-        <button id="tokenBtn" class="mb-4 w-full p-2 bg-green-600 text-white rounded">
-            Generate Token for SharePoint
+        <h2 class="text-2xl font-semibold mb-4">Staff Login Form</h2>
+        <button id="loginBtn" class="mb-4 w-full p-2 bg-green-600 text-white rounded">
+            Sign in with Microsoft
         </button>
         <form id="staffForm" onsubmit="submitForm(event)" style="display:none;">
             <label>Name</label>
@@ -67,13 +67,6 @@
                 <option value="NIGHT">NIGHT</option>
             </select>
 
-            <label>Token Type</label>
-            <select id="tokenType" class="w-full p-2 mb-4 border rounded" required>
-                <option value="">Select Token Type</option>
-                <option value="ACCESS TOKEN">Access Token</option>
-                <option value="ID TOKEN">ID Token</option>
-            </select>
-
             <input type="hidden" id="latitude" />
             <input type="hidden" id="longitude" />
 
@@ -92,7 +85,7 @@
         const msalConfig = {
             auth: {
                 clientId: "71f0c9d0-d2eb-4d3f-aebb-7adb7498fce2",
-                authority: "https://login.microsoftonline.com/common/v2.0",
+                authority: "https://login.microsoftonline.com/common",
                 redirectUri: "https://agyirclarke.github.io"
             },
             cache: {
@@ -102,7 +95,7 @@
         };
 
         const msalInstance = new msal.PublicClientApplication(msalConfig);
-        const tokenBtn = document.getElementById('tokenBtn');
+        const loginBtn = document.getElementById('loginBtn');
         const staffForm = document.getElementById('staffForm');
         const errorMessage = document.getElementById('errorMessage');
 
@@ -110,20 +103,17 @@
             scopes: ["User.Read", "https://5v73h7.sharepoint.com/.default"]
         };
 
-        let account;
-
-        tokenBtn.onclick = async () => {
+        loginBtn.onclick = async () => {
             try {
                 const loginResponse = await msalInstance.loginPopup(loginRequest);
-                account = loginResponse.account;
-                msalInstance.setActiveAccount(account);
-                tokenBtn.style.display = 'none';
+                msalInstance.setActiveAccount(loginResponse.account);
+                loginBtn.style.display = 'none';
                 staffForm.style.display = 'block';
                 errorMessage.textContent = '';
                 getLocation();
             } catch (error) {
-                console.error("Token generation failed:", error);
-                errorMessage.textContent = 'Token generation failed. Please try again.';
+                console.error("Sign in failed:", error);
+                errorMessage.textContent = 'Sign in failed. Please try again.';
             }
         };
 
