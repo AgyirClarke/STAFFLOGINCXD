@@ -1,101 +1,62 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Login Form</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f9fafb; }
-        .container { max-width: 400px; margin: 40px auto; padding: 20px; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .error { color: #dc2626; font-size: 0.875rem; margin-top: 4px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2 class="text-2xl font-semibold mb-4">Staff Login Form</h2>
-        <form id="staffForm" onsubmit="submitForm(event)">
-            <label>Name</label>
-            <input type="text" id="name" class="w-full p-2 mb-4 border rounded" placeholder="Enter your name">
-            <label>Staff ID</label>
-            <input type="text" id="staffID" class="w-full p-2 mb-4 border rounded" placeholder="Enter your staff ID">
-            <label>Unit</label>
-            <select id="unit" class="w-full p-2 mb-4 border rounded">
-                <option value="">Select Unit</option>
-                <option value="INBOUND">INBOUND</option>
-                <option value="OUTBOUND">OUTBOUND</option>
-                <option value="SERVICE EXCELLENCE">SERVICE EXCELLENCE</option>
-                <option value="SOCIAL MEDIA">SOCIAL MEDIA</option>
-                <option value="DIGITAL SUPPORT">DIGITAL SUPPORT</option>
-            </select>
-            <label>Shift</label>
-            <select id="shift" class="w-full p-2 mb-4 border rounded">
-                <option value="">Select Shift</option>
-                <option value="MORNING">MORNING</option>
-                <option value="REGULAR">REGULAR</option>
-                <option value="AFTERNOON">AFTERNOON</option>
-                <option value="NIGHT">NIGHT</option>
-            </select>
-            <input type="hidden" id="latitude">
-            <input type="hidden" id="longitude">
-            <button type="submit" class="w-full p-2 bg-blue-600 text-white rounded">Submit</button>
-            <p id="errorMessage" class="error"></p>
-        </form>
-    </div>
-    <script>
-        function submitForm(event) {
-            event.preventDefault();
-            const name = document.getElementById("name").value.trim();
-            const staffID = document.getElementById("staffID").value.trim();
-            const unit = document.getElementById("unit").value.trim();
-            const shift = document.getElementById("shift").value.trim();
-            const latitude = document.getElementById("latitude").value.trim();
-            const longitude = document.getElementById("longitude").value.trim();
-            const errorMessage = document.getElementById("errorMessage");
-            if (!name || !staffID || !unit || !shift || !latitude || !longitude) {
-                errorMessage.textContent = "Please fill in all required fields and enable location.";
-                return;
-            }
-            fetch('https://5v73h7.sharepoint.com/sites/MAISON/Lists/Staff_Responses/_api/web/lists/getbytitle("Staff_Responses")/items', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json;odata=verbose',
-                    'Content-Type': 'application/json;odata=verbose'
-                },
-                body: JSON.stringify({
-                    Title: "Location Capture",
-                    Timestamp: new Date().toISOString(),
-                    eMail: "test@example.com",
-                    Name: name,
-                    "Staff ID": staffID,
-                    Unit: unit,
-                    Shift: shift,
-                    Latitude: latitude,
-                    Longitude: longitude
-                })
-            }).then(response => response.json()).then(data => {
-                alert("Form submitted successfully!");
-                console.log(data);
-                errorMessage.textContent = "";
-            }).catch(error => {
-                console.error(error);
-                errorMessage.textContent = "Failed to submit data to SharePoint. Please try again later.";
-            });
-        }
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    document.getElementById("latitude").value = position.coords.latitude;
-                    document.getElementById("longitude").value = position.coords.longitude;
-                }, error => {
-                    console.error(error);
-                    document.getElementById("errorMessage").textContent = "Location access denied. Please enable location services.";
-                });
-            } else {
-                document.getElementById("errorMessage").textContent = "Geolocation is not supported by this browser.";
-            }
-        }
-        window.onload = getLocation;
-    </script>
-</body>
-</html>
+function doPost(e) {
+  const sheetId = "1-0gE2bqFcObsqqKIDoakfWQ_Zzb1iHta_uQ5eRmjyLk"; // Replace with your actual Google Sheet ID
+  const allowedOrigin = "https://agyirclarke.github.io"; // Your GitHub Pages domain
+
+  try {
+    // Handle preflight (OPTIONS) requests
+    if (e && e.method === "OPTIONS") {
+      return HtmlService.createHtmlOutput("")
+        .append("<meta http-equiv='Access-Control-Allow-Origin' content='" + allowedOrigin + "'>")
+        .append("<meta http-equiv='Access-Control-Allow-Methods' content='POST, OPTIONS'>")
+        .append("<meta http-equiv='Access-Control-Allow-Headers' content='Content-Type'>")
+        .append("<meta http-equiv='Access-Control-Max-Age' content='3600'>");
+    }
+
+    // Log the incoming request for debugging
+    Logger.log("Received Request: " + JSON.stringify(e));
+
+    // Parse the incoming JSON data
+    const data = JSON.parse(e.postData.contents);
+
+    // Open the sheet
+    const sheet = SpreadsheetApp.openById(sheetId).getActiveSheet();
+
+    // Prepare the row to be added to the sheet
+    const row = [
+      new Date(),      // Timestamp
+      data.name,
+      data.email,
+      data.signType,
+      data.unit,
+      data.shift,
+      data.latitude,
+      data.longitude
+    ];
+
+    // Append the row to the sheet
+    sheet.appendRow(row);
+
+    // Return a success response
+    const response = {
+      status: "success",
+      message: "Feedback submitted successfully!"
+    };
+
+    return ContentService.createTextOutput(JSON.stringify(response))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+    // Log the error for debugging
+    Logger.log("Error Occurred: " + error.message);
+    Logger.log("Stack Trace: " + error.stack);
+
+    // Return an error response
+    const errorResponse = {
+      status: "error",
+      message: error.message
+    };
+
+    return ContentService.createTextOutput(JSON.stringify(errorResponse))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
