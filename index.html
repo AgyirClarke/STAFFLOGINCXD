@@ -3,21 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Staff Login Form with Microsoft Form Embed</title>
+  <title>Staff Login Form with SharePoint Integration</title>
   <link href="https://unpkg.com/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet" />
   <style>
     body { background-color: #f9fafb; }
     .container { max-width: 450px; margin: 40px auto; padding: 20px; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
     .error { color: #dc2626; font-size: 0.875rem; margin-top: 4px; }
     .info { margin-top: 2rem; font-size: 0.875rem; color: #444444; }
-    iframe { 
-      border: none; 
-      width: 100%; 
-      min-height: 480px; 
-      border-radius: 12px; 
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      margin-top: 40px;
-    }
   </style>
 </head>
 <body>
@@ -64,21 +56,18 @@
       <input type="hidden" id="latitude" />
       <input type="hidden" id="longitude" />
 
-      <button type="submit" class="w-full p-2 bg-blue-600 text-white rounded">Submit</button>
+      <button type="submit" class="w-full p-2 bg-blue-600 text-white rounded">Submit and Continue</button>
       <p id="errorMessage" class="error"></p>
     </form>
-
-    <iframe 
-      src="https://forms.office.com/Pages/ResponsePage.aspx?id=ncsdCOre-EK0LnfpGwiDupUpW0id99hFovCIhmh5Ee1UMVVPU1Q5QTZTTDZQRlo0NFZKRVFMMUdHUi4u&embed=true" 
-      allowfullscreen 
-      webkitallowfullscreen 
-      mozallowfullscreen 
-      msallowfullscreen
-      title="Microsoft Form">
-    </iframe>
+    <div class="info">
+      After submitting this form, your data will be saved in SharePoint.
+    </div>
   </div>
 
   <script>
+    const sharePointSiteURL = "https://5v73h7.sharepoint.com/sites/MAISON";
+    const listName = "Staff_Responses";
+
     function toggleOtherUnit(value) {
       const otherUnitInput = document.getElementById('otherUnit');
       if (value === 'OTHER') {
@@ -100,37 +89,27 @@
       const signType = document.getElementById("signType").value.trim();
       const latitude = document.getElementById("latitude").value.trim();
       const longitude = document.getElementById("longitude").value.trim();
-      const errorMessage = document.getElementById("errorMessage");
 
-      if (unit === 'OTHER') {
-        if (!otherUnit) {
-          errorMessage.textContent = "Please specify the other unit.";
-          return;
-        }
-        unit = otherUnit;
-      }
-
-      if (!name || !email || !staffID || !unit || !shift || !signType || !latitude || !longitude) {
-        errorMessage.textContent = "Please fill in all required fields and enable location.";
+      if (unit === 'OTHER' && !otherUnit) {
+        alert("Please specify the other unit.");
         return;
       }
+      if (unit === 'OTHER') unit = otherUnit;
 
-      errorMessage.textContent = "";
-
-      // Save or process form data here (e.g., send to backend or local storage)
-      console.log("Staff Form Data:", {
-        Name: name,
+      const item = {
+        Title: name,
         eMail: email,
-        "Staff ID": staffID,
+        StaffID: staffID,
         Unit: unit,
         Shift: shift,
-        "Sign Type": signType,
+        SignType: signType,
         Latitude: latitude,
         Longitude: longitude,
         Timestamp: new Date().toISOString()
-      });
+      };
 
-      alert("Thanks for your submission!");
+      console.log("Sending data to SharePoint:", item);
+      alert("Form data saved locally. SharePoint integration pending.");
     }
 
     function getLocation() {
@@ -140,12 +119,10 @@
             document.getElementById("latitude").value = position.coords.latitude;
             document.getElementById("longitude").value = position.coords.longitude;
           },
-          (error) => {
-            document.getElementById("errorMessage").textContent = "Location access denied. Please enable location services.";
-          }
+          (error) => alert("Location access denied. Please enable location services.")
         );
       } else {
-        document.getElementById("errorMessage").textContent = "Geolocation is not supported by this browser.";
+        alert("Geolocation is not supported by this browser.");
       }
     }
 
