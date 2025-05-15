@@ -1,193 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Staff Feedback Form</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f3f4f6;
-            margin: 0;
-            padding: 1rem;
-            display: flex;
-            justify-content: center;
-        }
-        #app {
-            background: white;
-            max-width: 480px;
-            width: 100%;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 0 10px #ccc;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-        form > div {
-            margin-bottom: 1rem;
-        }
-        label {
-            display: block;
-            margin-bottom: 0.25rem;
-            font-weight: bold;
-        }
-        input[type="text"],
-        input[type="email"],
-        select {
-            width: 100%;
-            padding: 0.6rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 0.8rem;
-            border: none;
-            background: #0078d7;
-            color: white;
-            font-weight: bold;
-            font-size: 1rem;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:disabled {
-            background: #aaa;
-            cursor: not-allowed;
-        }
-        #loading {
-            display: none;
-            text-align: center;
-            margin-top: 1rem;
-            font-weight: bold;
-            color: #0078d7;
-        }
-        #message {
-            margin-top: 1rem;
-            font-weight: bold;
-            text-align: center;
-        }
-        .success {
-            color: green;
-        }
-        .error {
-            color: red;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Staff Feedback Form</title>
+  <script src="https://alcdn.msauth.net/browser/2.19.0/js/msal-browser.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      margin: 0;
+      padding: 1rem;
+      display: flex;
+      justify-content: center;
+    }
+    #app {
+      background: white;
+      max-width: 480px;
+      width: 100%;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    form > div {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-weight: bold;
+    }
+    input[type="text"], input[type="email"], select {
+      width: 100%;
+      padding: 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 0.8rem;
+      border: none;
+      background: #0078d7;
+      color: white;
+      font-weight: bold;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+    #loading {
+      display: none;
+      text-align: center;
+      margin-top: 1rem;
+      font-weight: bold;
+      color: #0078d7;
+    }
+    #message {
+      margin-top: 1rem;
+      font-weight: bold;
+      text-align: center;
+    }
+    .success {
+      color: green;
+    }
+    .error {
+      color: red;
+    }
+    #otherUnitContainer {
+      display: none;
+      margin-top: 0.5rem;
+    }
+  </style>
 </head>
 <body>
-    <div id="app">
-        <h1>Staff Feedback Form</h1>
-        <form id="staffForm" onsubmit="event.preventDefault(); submitForm();">
-            <div>
-                <label for="name">Name</label>
-                <input id="name" type="text" required placeholder="Enter your name" />
-            </div>
-            <div>
-                <label for="email">Email</label>
-                <input id="email" type="email" required placeholder="Enter your email" />
-            </div>
-            <div>
-                <label for="signType">Sign Type</label>
-                <select id="signType" required>
-                    <option value="" disabled selected>Select Sign Type</option>
-                    <option value="SIGN IN">SIGN IN</option>
-                    <option value="SIGN OUT">SIGN OUT</option>
-                </select>
-            </div>
-            <div>
-                <label for="unit">Unit</label>
-                <select id="unit" required>
-                    <option value="" disabled selected>Select Unit</option>
-                    <option value="INBOUND">INBOUND</option>
-                    <option value="OUTBOUND">OUTBOUND</option>
-                    <option value="SERVICE EXCELLENCE">SERVICE EXCELLENCE</option>
-                    <option value="SOCIAL MEDIA">SOCIAL MEDIA</option>
-                    <option value="DIGITAL SUPPORT">DIGITAL SUPPORT</option>
-                </select>
-            </div>
-            <div>
-                <label for="shift">Shift</label>
-                <select id="shift" required>
-                    <option value="" disabled selected>Select Shift</option>
-                    <option value="MORNING">MORNING</option>
-                    <option value="REGULAR">REGULAR</option>
-                    <option value="AFTERNOON">AFTERNOON</option>
-                    <option value="NIGHT">NIGHT</option>
-                </select>
-            </div>
-            <button type="submit" id="submitBtn">Submit</button>
-            <div id="loading">Submitting...</div>
-            <div id="message"></div>
-        </form>
-    </div>
+  <div id="app">
+    <h1>Staff Feedback Form</h1>
+    <form id="staffForm" onsubmit="event.preventDefault(); submitForm();">
+      <div>
+        <label for="name">Name</label>
+        <input id="name" type="text" required placeholder="Enter your name" />
+      </div>
+      <div>
+        <label for="email">Email</label>
+        <input id="email" type="email" required placeholder="Enter your email" />
+      </div>
+      <div>
+        <label for="signType">Sign Type</label>
+        <select id="signType" required>
+          <option value="" disabled selected>Select Sign Type</option>
+          <option value="SIGN IN">SIGN IN</option>
+          <option value="SIGN OUT">SIGN OUT</option>
+        </select>
+      </div>
+      <div>
+        <label for="unit">Unit</label>
+        <select id="unit" required onchange="handleUnitChange()">
+          <option value="" disabled selected>Select Unit</option>
+          <option value="INBOUND">INBOUND</option>
+          <option value="OUTBOUND">OUTBOUND</option>
+          <option value="SERVICE EXCELLENCE">SERVICE EXCELLENCE</option>
+          <option value="SOCIAL MEDIA">SOCIAL MEDIA</option>
+          <option value="DIGITAL SUPPORT">DIGITAL SUPPORT</option>
+          <option value="OTHER">Other</option>
+        </select>
+        <div id="otherUnitContainer">
+          <input id="otherUnit" type="text" placeholder="Please specify other unit" />
+        </div>
+      </div>
+      <div>
+        <label for="shift">Shift</label>
+        <select id="shift" required>
+          <option value="" disabled selected>Select Shift</option>
+          <option value="MORNING">MORNING</option>
+          <option value="REGULAR">REGULAR</option>
+          <option value="AFTERNOON">AFTERNOON</option>
+          <option value="NIGHT">NIGHT</option>
+        </select>
+      </div>
+      <button type="submit" id="submitBtn">Submit</button>
+      <div id="loading">Submitting...</div>
+      <div id="message"></div>
+    </form>
+  </div>
 
-    <script>
-        const googleScriptUrl = "https://script.google.com/macros/s/1EFC3b1RpWVsF9ANKkd3BV2scYJyN9pDjmgnlzkCIe9g2uEsMcE6PYNUN/exec";
+  <script>
+    const flowUrl = "https://prod-42.westeurope.logic.azure.com:443/workflows/31cc1535942d414ba91247031e5dafbb/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=GGwmFDoCo9EDtTbDngL8CX8JgctC5eGpYbRdHdP2eZM";
 
-        async function submitForm() {
-            const name = document.getElementById('name').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const signType = document.getElementById('signType').value;
-            const unit = document.getElementById('unit').value;
-            const shift = document.getElementById('shift').value;
-            const loading = document.getElementById('loading');
-            const message = document.getElementById('message');
-            const submitBtn = document.getElementById('submitBtn');
-            
-            loading.style.display = 'block';
-            message.textContent = '';
-            submitBtn.disabled = true;
-            
-            if (!navigator.geolocation) {
-                message.textContent = 'Geolocation is not supported by your browser.';
-                message.className = 'error';
-                loading.style.display = 'none';
-                submitBtn.disabled = false;
-                return;
-            }
+    // Get user's location
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            document.getElementById("latitude").value = position.coords.latitude;
+            document.getElementById("longitude").value = position.coords.longitude;
+        });
+    }
 
-            try {
-                const position = await new Promise((resolve, reject) =>
-                    navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true })
-                );
+    // Handle form submission
+    document.getElementById("staffForm").addEventListener("submit", function(e) {
+        e.preventDefault();
 
-                const payload = {
-                    name,
-                    email,
-                    signType,
-                    unit,
-                    shift,
-                    latitude: position.coords.latitude.toString(),
-                    longitude: position.coords.longitude.toString(),
-                    timestamp: new Date().toISOString(),
-                };
+        const name = document.getElementById("name").value;
+        const staffID = document.getElementById("staffID").value;
+        const unit = document.getElementById("unit").value;
+        const shift = document.getElementById("shift").value;
+        const latitude = document.getElementById("latitude").value;
+        const longitude = document.getElementById("longitude").value;
+        const email = "user@example.com"; // Use your preferred method to get the user email
 
-                const res = await fetch(googleScriptUrl, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload),
-                });
+        const data = {
+            Title: "Location Capture",
+            Timestamp: new Date().toISOString(),
+            eMail: email,
+            Name: name,
+            StaffID: staffID,
+            Unit: unit,
+            Shift: shift,
+            Latitude: latitude,
+            Longitude: longitude
+        };
 
-                const data = await res.json();
+        fetch(flowUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            alert("Data submitted successfully!");
+            console.log("Flow response:", result);
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Error submitting data. Please try again.");
+        });
+    });
+</script>
 
-                if (data.status === "success") {
-                    message.textContent = "Feedback submitted successfully!";
-                    message.className = "success";
-                    document.getElementById('staffForm').reset();
-                } else {
-                    throw new Error(data.message || "Unknown error");
-                }
-            } catch (err) {
-                message.textContent = "Failed to submit form: " + err.message;
-                message.className = "error";
-            } finally {
-                loading.style.display = 'none';
-                submitBtn.disabled = false;
-            }
-        }
-    </script>
 </body>
 </html>
+
