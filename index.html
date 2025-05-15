@@ -56,9 +56,31 @@
                 errorMessage.textContent = "Please fill in all required fields and enable location.";
                 return;
             }
-            console.log({ name, staffID, unit, shift, latitude, longitude });
-            alert("Form submitted successfully!");
-            errorMessage.textContent = "";
+            fetch('https://5v73h7.sharepoint.com/sites/MAISON/Lists/Staff_Responses/_api/web/lists/getbytitle("Staff_Responses")/items', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json;odata=verbose',
+                    'Content-Type': 'application/json;odata=verbose'
+                },
+                body: JSON.stringify({
+                    Title: "Location Capture",
+                    Timestamp: new Date().toISOString(),
+                    eMail: "test@example.com",
+                    Name: name,
+                    "Staff ID": staffID,
+                    Unit: unit,
+                    Shift: shift,
+                    Latitude: latitude,
+                    Longitude: longitude
+                })
+            }).then(response => response.json()).then(data => {
+                alert("Form submitted successfully!");
+                console.log(data);
+                errorMessage.textContent = "";
+            }).catch(error => {
+                console.error(error);
+                errorMessage.textContent = "Failed to submit data to SharePoint. Please try again later.";
+            });
         }
         function getLocation() {
             if (navigator.geolocation) {
