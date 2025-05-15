@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Staff Login Form</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet" />
     <style>
         body { background-color: #f9fafb; }
         .container { max-width: 400px; margin: 40px auto; padding: 20px; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
@@ -16,9 +16,9 @@
         <h2 class="text-2xl font-semibold mb-4">Staff Login Form</h2>
         <form id="staffForm" onsubmit="submitForm(event)">
             <label>Name</label>
-            <input type="text" id="name" class="w-full p-2 mb-4 border rounded" placeholder="Enter your name">
+            <input type="text" id="name" class="w-full p-2 mb-4 border rounded" placeholder="Enter your name" />
             <label>Staff ID</label>
-            <input type="text" id="staffID" class="w-full p-2 mb-4 border rounded" placeholder="Enter your staff ID">
+            <input type="text" id="staffID" class="w-full p-2 mb-4 border rounded" placeholder="Enter your staff ID" />
             <label>Unit</label>
             <select id="unit" class="w-full p-2 mb-4 border rounded">
                 <option value="">Select Unit</option>
@@ -36,14 +36,17 @@
                 <option value="AFTERNOON">AFTERNOON</option>
                 <option value="NIGHT">NIGHT</option>
             </select>
-            <input type="hidden" id="latitude">
-            <input type="hidden" id="longitude">
+            <input type="hidden" id="latitude" />
+            <input type="hidden" id="longitude" />
             <button type="submit" class="w-full p-2 bg-blue-600 text-white rounded">Submit</button>
             <p id="errorMessage" class="error"></p>
         </form>
     </div>
     <script>
+        console.log("Script loaded");
+
         function submitForm(event) {
+            console.log("submitForm called");
             event.preventDefault();
             const name = document.getElementById("name").value.trim();
             const staffID = document.getElementById("staffID").value.trim();
@@ -52,13 +55,21 @@
             const latitude = document.getElementById("latitude").value.trim();
             const longitude = document.getElementById("longitude").value.trim();
             const errorMessage = document.getElementById("errorMessage");
+
             if (!name || !staffID || !unit || !shift || !latitude || !longitude) {
                 errorMessage.textContent = "Please fill in all required fields and enable location.";
+                console.log("Validation failed");
                 return;
             }
             // Simulate form submission
-            alert(`Form submitted successfully!\nName: ${name}\nStaff ID: ${staffID}\nUnit: ${unit}\nShift: ${shift}\nLatitude: ${latitude}\nLongitude: ${longitude}`);
-            console.log({
+            alert(`Form submitted successfully!
+Name: ${name}
+Staff ID: ${staffID}
+Unit: ${unit}
+Shift: ${shift}
+Latitude: ${latitude}
+Longitude: ${longitude}`);
+            console.log("Form data:", {
                 Name: name,
                 "Staff ID": staffID,
                 Unit: unit,
@@ -68,15 +79,32 @@
             });
             errorMessage.textContent = "";
         }
-        
+
         function getLocation() {
+            console.log("getLocation called");
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    document.getElementById("latitude").value = position.coords.latitude;
-                    document.getElementById("longitude").value = position.coords.longitude;
-                }, error => {
-                    console.error(error);
-                    document.getElementById("errorMessage").textContent = "Location access denied. Please enable location services.";
-                });
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        console.log("Location retrieved", position.coords);
+                        document.getElementById("latitude").value = position.coords.latitude;
+                        document.getElementById("longitude").value = position.coords.longitude;
+                    },
+                    (error) => {
+                        console.error("Location error:", error);
+                        document.getElementById("errorMessage").textContent = "Location access denied. Please enable location services.";
+                    }
+                );
             } else {
-                document.getElementById("errorMessage
+                console.log("Geolocation not supported");
+                document.getElementById("errorMessage").textContent = "Geolocation is not supported by this browser.";
+            }
+        }
+
+        window.onload = () => {
+            console.log("Window loaded");
+            getLocation();
+        };
+    </script>
+</body>
+</html>
+
