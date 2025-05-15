@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Staff Login Form with SharePoint Integration & MSAL Authentication</title>
+    <title>Staff Login Form with SharePoint Integration & Token Authentication</title>
     <link href="https://unpkg.com/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet" />
     <script src="https://alcdn.msauth.net/browser/2.19.0/js/msal-browser.min.js"></script>
     <style>
@@ -30,11 +30,11 @@
         }
     </style>
 </head>
-<body>
+<body> 
     <div class="container">
-        <h2 class="text-2xl font-semibold mb-4">Staff Login Form</h2>
-        <button id="loginBtn" class="mb-4 w-full p-2 bg-green-600 text-white rounded">
-            Login to SharePoint
+        <h2 class="text-2xl font-semibold mb-4">Staff Token Form</h2>
+        <button id="tokenBtn" class="mb-4 w-full p-2 bg-green-600 text-white rounded">
+            Generate Token for SharePoint
         </button>
         <form id="staffForm" onsubmit="submitForm(event)" style="display:none;">
             <label>Name</label>
@@ -67,11 +67,11 @@
                 <option value="NIGHT">NIGHT</option>
             </select>
 
-            <label>Sign Type</label>
-            <select id="signType" class="w-full p-2 mb-4 border rounded" required>
-                <option value="">Select Sign Type</option>
-                <option value="SIGN IN">Sign in</option>
-                <option value="SIGN OUT">Sign out</option>
+            <label>Token Type</label>
+            <select id="tokenType" class="w-full p-2 mb-4 border rounded" required>
+                <option value="">Select Token Type</option>
+                <option value="ACCESS TOKEN">Access Token</option>
+                <option value="ID TOKEN">ID Token</option>
             </select>
 
             <input type="hidden" id="latitude" />
@@ -89,12 +89,11 @@
     </div>
 
     <script>
-        // MSAL Config — replace with your app registration info
         const msalConfig = {
             auth: {
                 clientId: "71f0c9d0-d2eb-4d3f-aebb-7adb7498fce2",
                 authority: "https://login.microsoftonline.com/d589f81f-3452-4876-bbcd-0b0264cf463a",
-                redirectUri: window.location.origin
+                redirectUri: "https://agyirclarke.github.io"
             },
             cache: {
                 cacheLocation: "localStorage",
@@ -103,7 +102,7 @@
         };
 
         const msalInstance = new msal.PublicClientApplication(msalConfig);
-        const loginBtn = document.getElementById('loginBtn');
+        const tokenBtn = document.getElementById('tokenBtn');
         const staffForm = document.getElementById('staffForm');
         const errorMessage = document.getElementById('errorMessage');
 
@@ -113,89 +112,20 @@
 
         let account;
 
-        loginBtn.onclick = async () => {
+        tokenBtn.onclick = async () => {
             try {
                 const loginResponse = await msalInstance.loginPopup(loginRequest);
                 account = loginResponse.account;
                 msalInstance.setActiveAccount(account);
-                loginBtn.style.display = 'none';
+                tokenBtn.style.display = 'none';
                 staffForm.style.display = 'block';
                 errorMessage.textContent = '';
                 getLocation();
             } catch (error) {
-                console.error("Login failed:", error);
-                errorMessage.textContent = 'Login failed. Please try again.';
+                console.error("Token generation failed:", error);
+                errorMessage.textContent = 'Token generation failed. Please try again.';
             }
         };
-
-        async function getToken() {
-            const activeAccount = msalInstance.getActiveAccount();
-            if (!activeAccount) throw new Error("No active account. Please login.");
-            const request = { scopes: ["https://5v73h7.sharepoint.com/.default"], account: activeAccount };
-            try {
-                const response = await msalInstance.acquireTokenSilent(request);
-                return response.accessToken;
-            } catch (error) {
-                if (error instanceof msal.InteractionRequiredAuthError) {
-                    const response = await msalInstance.acquireTokenPopup(request);
-                    return response.accessToken;
-                } else {
-                    throw error;
-                }
-            }
-        }
-
-        function toggleOtherUnit(value) {
-            const otherUnitInput = document.getElementById('otherUnit');
-            if(value === 'OTHER') {
-                otherUnitInput.classList.remove('hidden');
-            } else {
-                otherUnitInput.classList.add('hidden');
-                otherUnitInput.value = '';
-            }
-        }
-
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    position => {
-                        document.getElementById('latitude').value = position.coords.latitude;
-                        document.getElementById('longitude').value = position.coords.longitude;
-                    },
-                    () => {
-                        errorMessage.textContent = "Location access denied. Please enable location services.";
-                    }
-                );
-            } else {
-                errorMessage.textContent = "Geolocation not supported by this browser.";
-            }
-        }
-
-        async function submitForm(event) {
-            event.preventDefault();
-            const name = document.getElementById("name").value.trim();
-            const email = document.getElementById("email").value.trim();
-            const staffID = document.getElementById("staffID").value.trim();
-            let unit = document.getElementById("unit").value.trim();
-            const otherUnit = document.getElementById("otherUnit").value.trim();
-            const shift = document.getElementById("shift").value.trim();
-            const signType = document.getElementById("signType").value.trim();
-            const latitude = document.getElementById("latitude").value.trim();
-            const longitude = document.getElementById("longitude").value.trim();
-            
-            if (unit === 'OTHER' && !otherUnit) {
-                errorMessage.textContent = "Please specify the other unit.";
-                return;
-            }
-            if (unit === 'OTHER') unit = otherUnit;
-
-            if (!name || !email || !staffID || !unit || !shift || !signType || !latitude || !longitude) {
-                errorMessage.textContent = "Please fill in all required fields and enable location.";
-                return;
-            }
-
-            errorMessage.textContent = '';
-        }
     </script>
 </body>
 </html>
