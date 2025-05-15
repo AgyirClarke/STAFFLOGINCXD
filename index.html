@@ -108,8 +108,22 @@
         Timestamp: new Date().toISOString()
       };
 
-      console.log("Sending data to SharePoint:", item);
-      alert("Form data saved locally. SharePoint integration pending.");
+      fetch(`${sharePointSiteURL}/_api/web/lists/getbytitle('${listName}')/items`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json;odata=verbose',
+          'Accept': 'application/json;odata=verbose'
+        },
+        body: JSON.stringify(item)
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert("Form data successfully saved to SharePoint.");
+      })
+      .catch(error => {
+        console.error("Error saving data to SharePoint:", error);
+        alert("Error saving data. Please try again.");
+      });
     }
 
     function getLocation() {
