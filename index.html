@@ -30,7 +30,7 @@
         }
     </style>
 </head>
-<body> 
+<body>
     <div class="container">
         <h2 class="text-2xl font-semibold mb-4">Staff Token Form</h2>
         <button id="tokenBtn" class="mb-4 w-full p-2 bg-green-600 text-white rounded">
@@ -91,8 +91,8 @@
     <script>
         const msalConfig = {
             auth: {
-                clientId: "71f0c9d0-d2eb-4d3f-aebb-7adb7498fce2",
-                authority: "https://login.microsoftonline.com/d589f81f-3452-4876-bbcd-0b0264cf463a",
+                clientId: "YOUR_CLIENT_ID",
+                authority: "https://login.microsoftonline.com/YOUR_TENANT_ID",
                 redirectUri: "https://agyirclarke.github.io"
             },
             cache: {
@@ -126,6 +126,22 @@
                 errorMessage.textContent = 'Token generation failed. Please try again.';
             }
         };
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        document.getElementById('latitude').value = position.coords.latitude;
+                        document.getElementById('longitude').value = position.coords.longitude;
+                    },
+                    () => {
+                        errorMessage.textContent = "Location access denied. Please enable location services.";
+                    }
+                );
+            } else {
+                errorMessage.textContent = "Geolocation not supported by this browser.";
+            }
+        }
     </script>
 </body>
 </html>
