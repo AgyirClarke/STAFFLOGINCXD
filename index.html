@@ -100,7 +100,7 @@
         const errorMessage = document.getElementById('errorMessage');
 
         const loginRequest = {
-            scopes: ["User.Read", "https://5v73h7.sharepoint.com/.default"]
+            scopes: ["User.Read", "openid", "profile", "offline_access"]
         };
 
         loginBtn.onclick = async () => {
