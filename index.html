@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8" /> 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Staff Login Form with Microsoft Form</title>
+  <title>Staff Login Form</title>
   <link href="https://unpkg.com/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet" />
   <style>
     body { background-color: #f9fafb; }
@@ -56,18 +56,15 @@
       <input type="hidden" id="latitude" />
       <input type="hidden" id="longitude" />
 
-      <button type="submit" class="w-full p-2 bg-blue-600 text-white rounded">Submit and Continue</button>
+      <button type="submit" class="w-full p-2 bg-blue-600 text-white rounded">Submit</button>
       <p id="errorMessage" class="error"></p>
     </form>
     <div class="info">
-      After submitting this form, you will be redirected to fill the Microsoft Form.
+      Your data will be processed by our system after submission.
     </div>
   </div>
 
   <script>
-    const microsoftFormURL = "https://forms.office.com/Pages/ResponsePage.aspx?id=EXAMPLE_FORM_ID"; 
-    // Replace above URL with your real Microsoft Form link
-
     function toggleOtherUnit(value) {
       const otherUnitInput = document.getElementById('otherUnit');
       if (value === 'OTHER') {
@@ -78,7 +75,7 @@
       }
     }
 
-    function submitForm(event) {
+    async function submitForm(event) {
       event.preventDefault();
       const name = document.getElementById("name").value.trim();
       const email = document.getElementById("email").value.trim();
@@ -106,23 +103,30 @@
 
       errorMessage.textContent = "";
 
-      // Save or process form data here
-      console.log("Staff Form Data:", {
-        Name: name,
-        eMail: email,
-        "Staff ID": staffID,
-        Unit: unit,
-        Shift: shift,
-        "Sign Type": signType,
-        Latitude: latitude,
-        Longitude: longitude,
-        Timestamp: new Date().toISOString()
-      });
-
-      alert("Your staff data has been saved locally.\nYou will now be redirected to the Microsoft Form.");
-
-      // Open Microsoft Form in a new tab/window for the user to fill
-      window.open(microsoftFormURL, "_blank");
+      // Example: Send to your proxy endpoint or backend
+      try {
+        const response = await fetch('https://v0-new-project-zdwrdzlplpx.vercel.app/api/proxy', { // Replace with your proxy URL
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            Name: name,
+            eMail: email,
+            "Staff ID": staffID,
+            Unit: unit,
+            Shift: shift,
+            "Sign Type": signType,
+            Latitude: latitude,
+            Longitude: longitude,
+            Timestamp: new Date().toISOString(),
+          })
+        });
+        if (!response.ok) throw new Error('Submission failed');
+        alert('Form submitted successfully.');
+        event.target.reset();
+      } catch (error) {
+        console.error('Error submitting form:', error);
+        errorMessage.textContent = 'Error submitting form. Please try again later.';
+      }
     }
 
     function getLocation() {
