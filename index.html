@@ -1,25 +1,27 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Geo Form</title>
-</head>
-<body>
-  <div id="form-container">
-    <iframe id="geoForm" width="640" height="1912" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
-  </div>
+  <head>
+    <title>Auto Form Redirect</title>
+    <script>
+      function redirectToForm() {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
 
-  <script>
-    navigator.geolocation.getCurrentPosition(function(pos) {
-      const lat = pos.coords.latitude;
-      const lon = pos.coords.longitude;
-
-      // Replace these with your actual entry IDs
-      const formURL = `https://docs.google.com/forms/d/e/1FAIpQLSc_uVECMXrkx3xfLaGgv1uHb1oNqGpPZwPOhLqsqlW2QJ9RZg/viewform?embedded=true&entry.594736163=${lat}&entry.1571113994=${lon}&entry.1597125655=${lat}&entry.2107631748=${lon}`;
-
-      document.getElementById("geoForm").src = formURL;
-    }, function(err) {
-      alert("Location access denied or unavailable.");
-    });
-  </script>
-</body>
+          // Replace with your actual entry IDs from pre-filled link
+          const formURL = "https://docs.google.com/forms/d/e/FORM_ID/viewform?usp=pp_url" +
+                          "&entry.594736163=" + encodeURIComponent(lat) +
+                          "&entry.1571113994=" + encodeURIComponent(lon) +
+                          "&entry.2033144495=Yes";  // Auto Continue
+          window.location.href = formURL;
+        }, function(error) {
+          alert("Geolocation error: " + error.message);
+        });
+      }
+      window.onload = redirectToForm;
+    </script>
+  </head>
+  <body>
+    <p>Getting your location…</p>
+  </body>
 </html>
