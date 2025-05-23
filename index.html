@@ -2,10 +2,37 @@
 <html>
 <head>
   <title>Geo Form</title>
+  <style>
+    #form-container {
+      position: relative;
+      width: 640px; /* Match the iframe width */
+      height: 1912px; /* Match the iframe height */
+    }
+    #geoForm {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    .overlay {
+      position: absolute;
+      top: 100px; /* Adjust to the position of the latitude field */
+      left: 50px; /* Adjust to the position of the longitude field */
+      width: 540px; /* Adjust to cover the fields */
+      height: 50px; /* Adjust to cover the fields */
+      background-color: rgba(255, 255, 255, 0.8); /* White background with some opacity */
+      color: black; /* Text color for the overlay */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      pointer-events: none; /* Allow clicks to pass through */
+    }
+  </style>
 </head>
 <body>
   <div id="form-container">
-    <iframe id="geoForm" width="640" height="1912" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+    <iframe id="geoForm" src="about:blank">Loading…</iframe>
+    <div class="overlay">Latitude and Longitude (Fixed)</div>
   </div>
 
   <script>
@@ -14,7 +41,7 @@
       const lon = pos.coords.longitude;
 
       // Replace these with your actual entry IDs
-      const formURL = `https://docs.google.com/forms/d/e/1FAIpQLSc_uVECMXrkx3xfLaGgv1uHb1oNqGpPZwPOhLqsqlW2QJ9RZg/viewform?embedded=true&entry.594736163=${lat}&entry.1571113994=${lon}`;
+      const formURL = `https://docs.google.com/forms/d/e/1FAIpQLSc_uVECMXrkx3xfLaGgv1uHb1oNqGpPZwPOhLqsqlW2QJ9RZg/viewform?usp=pp_url&entry.594736163=${lat}&entry.1571113994=${lon}`;
 
       document.getElementById("geoForm").src = formURL;
     }, function(err) {
